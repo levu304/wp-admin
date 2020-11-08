@@ -6,13 +6,13 @@ import cookie from "react-cookies";
 
 export default ({ component: Component, ...rest }) => {
   const { pathname } = useLocation();
-  const token = cookie.load("token");
+  const authCookie = cookie.load("Authorization");
 
   return (
     <Route
       {...rest}
       render={(props) =>
-        typeof token !== "undefined" && token && token !== "" ? (
+        typeof authCookie !== "undefined" && authCookie && authCookie !== "" ? (
           <Wrapper>
             <Component {...props} />
           </Wrapper>

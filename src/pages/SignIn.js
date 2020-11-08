@@ -22,6 +22,7 @@ export default () => {
 
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [remember, setRemember] = useState(false);
   const [IsSubmit, setIsSubmit] = useState(false);
   const [IsError, setIsError] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
@@ -33,6 +34,7 @@ export default () => {
     API.post("/api/v1/login", {
       user_login: username,
       user_password: password,
+      remember,
     })
       .then((response) => {
         setIsSubmit(false);
@@ -41,10 +43,8 @@ export default () => {
           data: { data },
         } = response;
         if (status === 200) {
-          const { user, token } = data;
-          const authorization = "Basic " + btoa(username + ":" + password);
+          const { user, authorization } = data;
           cookie.save("Authorization", authorization, { path: "/" });
-          cookie.save("token", token, { path: "/" });
           cookie.save("user", user, { path: "/" });
           dispatch(setUser(user));
           replace(LANDING, "urlhistory");
@@ -83,7 +83,7 @@ export default () => {
               <small dangerouslySetInnerHTML={{ __html: errorMessage }} />
             </Alert>
           )}
-          <Card>
+          <Card className="mb-3">
             <Card.Body>
               <Form>
                 <Form.Group>
@@ -108,9 +108,11 @@ export default () => {
 
                 <Row className="align-items-center">
                   <Col>
-                    <Link to={PASSWORD_FORGET} className="text-muted">
-                      <small>Lost your password?</small>
-                    </Link>
+                    <Form.Check
+                      type="checkbox"
+                      label="Remember me"
+                      checked={remember}
+                    />
                   </Col>
                   <Col className="text-right">
                     <Button
@@ -138,6 +140,9 @@ export default () => {
               </Form>
             </Card.Body>
           </Card>
+          <Link to={PASSWORD_FORGET} className="text-muted">
+            <small>Lost your password?</small>
+          </Link>
         </Col>
       </Row>
     </Container>

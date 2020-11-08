@@ -1,12 +1,23 @@
 import "./App.css";
 import Background from "./templates/Background";
-import { POSTS, LANDING, SIGN_IN, PASSWORD_FORGET } from "./routes";
+import {
+  POSTS,
+  LANDING,
+  SIGN_IN,
+  PASSWORD_FORGET,
+  MEDIA,
+  PAGES,
+  COMMENTS,
+} from "./routes";
 import { BrowserRouter as Router, Switch, Route } from "react-router-dom";
 import { useSelector } from "react-redux";
 import PrivateRoute from "./components/PrivateRoute";
 import Home from "./pages/Home";
 import Posts from "./pages/Posts";
 import SignIn from "./pages/SignIn";
+import Media from "./pages/Media";
+import Pages from "./pages/Pages";
+import Comments from "./pages/Comments";
 import ForgotPassword from "./pages/ForgotPassword";
 import Loader from "./components/Loader";
 
@@ -18,6 +29,9 @@ function App() {
         <Switch>
           <PrivateRoute component={Home} path={LANDING} exact />
           <PrivateRoute component={Posts} path={POSTS} exact />
+          <PrivateRoute component={Media} path={MEDIA} exact />
+          <PrivateRoute component={Pages} path={PAGES} exact />
+          <PrivateRoute component={Comments} path={COMMENTS} exact />
 
           <Route component={SignIn} path={SIGN_IN} exact />
           <Route component={ForgotPassword} path={PASSWORD_FORGET} exact />
