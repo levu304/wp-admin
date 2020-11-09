@@ -5,6 +5,7 @@ export const PAGES = "/pages";
 export const COMMENTS = "/comments";
 export const MEDIA = "/media";
 export const USERS = "/users";
+export const USER = "/users/:id";
 export const OPTIONS = "/options";
 
 export const SIGN_IN = "/signin";
