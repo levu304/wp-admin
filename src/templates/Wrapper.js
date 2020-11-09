@@ -2,12 +2,6 @@ import React, { memo, Fragment } from "react";
 import { Col, Container, Row } from "react-bootstrap";
 import Appbar from "../components/Appbar";
 import Sidebar from "../components/Sidebar";
-import styled from "styled-components";
-
-const Column = styled(Col)`
-  overflow-x: hidden;
-  overflow-y: auto;
-`;
 
 export default memo(({ children }) => {
   return (
@@ -16,12 +10,12 @@ export default memo(({ children }) => {
 
       <Container fluid className="h-100 overflow-hidden">
         <Row className="h-100 overflow-hidden">
-          <Column lg={2} xl={1} className="h-100 bg-dark px-0">
+          <Col lg={2} className="h-100 bg-dark px-0">
             <Sidebar />
-          </Column>
-          <Column lg={10} xl={11} className="overflow-hidden">
+          </Col>
+          <Col lg={10} className="py-3">
             {children}
-          </Column>
+          </Col>
         </Row>
       </Container>
     </Fragment>

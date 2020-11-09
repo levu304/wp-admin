@@ -2,6 +2,7 @@ export const LANDING = "/";
 export const DASHBOARD = "/dashboard";
 export const POSTS = "/posts";
 export const PAGES = "/pages";
+export const POST_NEW = "/post-new";
 export const COMMENTS = "/comments";
 export const MEDIA = "/media";
 export const USERS = "/users";
