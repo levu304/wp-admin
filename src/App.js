@@ -9,7 +9,14 @@ import {
   PAGES,
   COMMENTS,
   USERS,
-  USER,
+  POST_NEW,
+  CATEGORIES,
+  TAGS,
+  USER_NEW,
+  PROFILE,
+  USER_EDIT,
+  MEDIA_NEW,
+  PAGE_NEW,
 } from "./routes";
 import { BrowserRouter as Router, Switch, Route } from "react-router-dom";
 import { useSelector } from "react-redux";
@@ -20,11 +27,17 @@ import Home from "./pages/Home";
 import Posts from "./pages/Posts";
 import SignIn from "./pages/SignIn";
 import Media from "./pages/Media";
+import MediaNew from "./pages/MediaNew";
 import Pages from "./pages/Pages";
 import Comments from "./pages/Comments";
 import ForgotPassword from "./pages/ForgotPassword";
 import Users from "./pages/Users";
-import EditUser from "./pages/EditUser";
+import UserEdit from "./pages/UserEdit";
+import PostNew from "./pages/PostNew";
+import Tags from "./pages/Tags";
+import Categories from "./pages/Categories";
+import UserNew from "./pages/UserNew";
+import Profile from "./pages/Profile";
 
 function App() {
   const { toggleLoader } = useSelector((state) => state.settings);
@@ -34,11 +47,19 @@ function App() {
         <Switch>
           <PrivateRoute component={Home} path={LANDING} exact />
           <PrivateRoute component={Posts} path={POSTS} exact />
+          <PrivateRoute component={PostNew} path={POST_NEW} exact />
+          <PrivateRoute component={Categories} path={CATEGORIES} exact />
+          <PrivateRoute component={Tags} path={TAGS} exact />
+          <PrivateRoute component={Media} path={MEDIA} exact />
+          <PrivateRoute component={MediaNew} path={MEDIA_NEW} exact />
           <PrivateRoute component={Media} path={MEDIA} exact />
           <PrivateRoute component={Pages} path={PAGES} exact />
+          <PrivateRoute component={PostNew} path={PAGE_NEW} exact />
           <PrivateRoute component={Comments} path={COMMENTS} exact />
           <PrivateRoute component={Users} path={USERS} exact />
-          <PrivateRoute component={EditUser} path={USER} exact />
+          <PrivateRoute component={UserNew} path={USER_NEW} exact />
+          <PrivateRoute component={UserEdit} path={USER_EDIT} />
+          <PrivateRoute component={Profile} path={PROFILE} exact />
 
           <Route component={SignIn} path={SIGN_IN} exact />
           <Route component={ForgotPassword} path={PASSWORD_FORGET} exact />

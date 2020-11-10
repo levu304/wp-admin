@@ -38,8 +38,9 @@ export default () => {
     columns,
     data: [],
   });
+
   return (
-    <Table {...getTableProps()}>
+    <Table striped bordered {...getTableProps()}>
       <thead>
         {headerGroups.map((headerGroup) => (
           <tr {...headerGroup.getHeaderGroupProps()}>
