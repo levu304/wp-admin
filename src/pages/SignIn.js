@@ -31,7 +31,7 @@ export default () => {
     e.preventDefault();
     setIsSubmit(true);
 
-    API.post("/api/v1/login", {
+    API.post("/login", {
       user_login: username,
       user_password: password,
       remember,

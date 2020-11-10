@@ -1,5 +1,5 @@
 import axios from "axios";
 
 export default axios.create({
-  baseURL: "http://localhost/wordpress/wp-json",
+  baseURL: "http://localhost/wordpress/wp-json/api/v1",
 });

@@ -16,11 +16,11 @@ import {
   PAGE_NEW,
 } from "../routes";
 import {
-  FaCopy,
   FaBookReader,
   FaImages,
   FaComments,
   FaUsers,
+  FaCopy,
 } from "react-icons/fa";
 import styled from "styled-components";
 
@@ -86,7 +86,11 @@ export default memo(() => {
                 className="nav-link d-flex align-items-center px-4 text-white"
               >
                 <small>
-                  <span className={pathname === POSTS && "font-weight-bold"}>
+                  <span
+                    className={
+                      pathname === POSTS ? "font-weight-bold" : undefined
+                    }
+                  >
                     All Posts
                   </span>
                 </small>
@@ -99,7 +103,11 @@ export default memo(() => {
                 className="nav-link d-flex align-items-center px-4 text-white"
               >
                 <small>
-                  <span className={pathname === POST_NEW && "font-weight-bold"}>
+                  <span
+                    className={
+                      pathname === POST_NEW ? "font-weight-bold" : undefined
+                    }
+                  >
                     Add new
                   </span>
                 </small>
@@ -113,7 +121,9 @@ export default memo(() => {
               >
                 <small>
                   <span
-                    className={pathname === CATEGORIES && "font-weight-bold"}
+                    className={
+                      pathname === CATEGORIES ? "font-weight-bold" : undefined
+                    }
                   >
                     Categories
                   </span>
@@ -127,7 +137,11 @@ export default memo(() => {
                 className="nav-link d-flex align-items-center px-4 text-white"
               >
                 <small>
-                  <span className={pathname === TAGS && "font-weight-bold"}>
+                  <span
+                    className={
+                      pathname === TAGS ? "font-weight-bold" : undefined
+                    }
+                  >
                     Tags
                   </span>
                 </small>
@@ -142,7 +156,9 @@ export default memo(() => {
             pathname === POSTS ||
             pathname === POST_NEW ||
             pathname === CATEGORIES ||
-            (pathname === TAGS && "bg-primary")
+            pathname === TAGS
+              ? "bg-primary"
+              : undefined
           }
           title={
             <Fragment>
@@ -184,7 +200,11 @@ export default memo(() => {
                 className="nav-link d-flex align-items-center px-4 text-white"
               >
                 <small>
-                  <span className={pathname === MEDIA && "font-weight-bold"}>
+                  <span
+                    className={
+                      pathname === MEDIA ? "font-weight-bold" : undefined
+                    }
+                  >
                     Library
                   </span>
                 </small>
@@ -198,7 +218,9 @@ export default memo(() => {
               >
                 <small>
                   <span
-                    className={pathname === MEDIA_NEW && "font-weight-bold"}
+                    className={
+                      pathname === MEDIA_NEW ? "font-weight-bold" : undefined
+                    }
                   >
                     Add new
                   </span>
@@ -211,11 +233,13 @@ export default memo(() => {
         <NavDropdown
           drop="right"
           className={
-            (pathname === MEDIA || pathname === MEDIA_NEW) && "bg-primary"
+            pathname === MEDIA || pathname === MEDIA_NEW
+              ? "bg-primary"
+              : undefined
           }
           title={
             <Fragment>
-              <FaBookReader className="mr-2" /> Media
+              <FaImages className="mr-2" /> Media
             </Fragment>
           }
         >
@@ -235,7 +259,7 @@ export default memo(() => {
             activeClassName="active"
             className="nav-link d-flex align-items-center px-4 text-white bg-primary"
           >
-            <FaImages className="mr-2" />
+            <FaCopy className="mr-2" />
             Pages
           </NavLink>
 
@@ -247,7 +271,11 @@ export default memo(() => {
                 className="nav-link d-flex align-items-center px-4 text-white"
               >
                 <small>
-                  <span className={pathname === PAGES && "font-weight-bold"}>
+                  <span
+                    className={
+                      pathname === PAGES ? "font-weight-bold" : undefined
+                    }
+                  >
                     All Pages
                   </span>
                 </small>
@@ -260,7 +288,11 @@ export default memo(() => {
                 className="nav-link d-flex align-items-center px-4 text-white"
               >
                 <small>
-                  <span className={pathname === PAGE_NEW && "font-weight-bold"}>
+                  <span
+                    className={
+                      pathname === PAGE_NEW ? "font-weight-bold" : undefined
+                    }
+                  >
                     Add new
                   </span>
                 </small>
@@ -272,11 +304,13 @@ export default memo(() => {
         <NavDropdown
           drop="right"
           className={
-            (pathname === PAGES || pathname === PAGE_NEW) && "bg-primary"
+            pathname === PAGES || pathname === PAGE_NEW
+              ? "bg-primary"
+              : undefined
           }
           title={
             <Fragment>
-              <FaBookReader className="mr-2" /> Pages
+              <FaCopy className="mr-2" /> Pages
             </Fragment>
           }
         >
@@ -289,7 +323,7 @@ export default memo(() => {
         </NavDropdown>
       )}
 
-      <Nav.Item className={pathname === COMMENTS ? "bg-primary" : ""}>
+      <Nav.Item className={pathname === COMMENTS ? "bg-primary" : undefined}>
         <NavLink
           to="/comments"
           activeClassName="active"
@@ -321,7 +355,11 @@ export default memo(() => {
                 className="nav-link d-flex align-items-center px-4 text-white"
               >
                 <small>
-                  <span className={pathname === USERS && "font-weight-bold"}>
+                  <span
+                    className={
+                      pathname === USERS ? "font-weight-bold" : undefined
+                    }
+                  >
                     All Users
                   </span>
                 </small>
@@ -334,7 +372,11 @@ export default memo(() => {
                 className="nav-link d-flex align-items-center px-4 text-white"
               >
                 <small>
-                  <span className={pathname === USER_NEW && "font-weight-bold"}>
+                  <span
+                    className={
+                      pathname === USER_NEW ? "font-weight-bold" : undefined
+                    }
+                  >
                     Add new
                   </span>
                 </small>
@@ -347,8 +389,12 @@ export default memo(() => {
                 className="nav-link d-flex align-items-center px-4 text-white"
               >
                 <small>
-                  <span className={pathname === PROFILE && "font-weight-bold"}>
-                    Profile
+                  <span
+                    className={
+                      pathname === PROFILE ? "font-weight-bold" : undefined
+                    }
+                  >
+                    Your Profile
                   </span>
                 </small>
               </NavLink>
@@ -359,13 +405,13 @@ export default memo(() => {
         <NavDropdown
           drop="right"
           className={
-            pathname === USERS ||
-            pathname === USER_NEW ||
-            (pathname === PROFILE && "bg-primary")
+            pathname === USERS || pathname === USER_NEW || pathname === PROFILE
+              ? "bg-primary"
+              : undefined
           }
           title={
             <Fragment>
-              <FaBookReader className="mr-2" /> Users
+              <FaComments className="mr-2" /> Users
             </Fragment>
           }
         >
@@ -376,7 +422,7 @@ export default memo(() => {
             Add new
           </NavDropdown.Item>
           <NavDropdown.Item className="text-white" as={Link} to={PROFILE}>
-            Profile
+            Your Profile
           </NavDropdown.Item>
         </NavDropdown>
       )}
