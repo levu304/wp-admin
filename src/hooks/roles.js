@@ -1,12 +1,13 @@
 import { useEffect, useState } from "react";
 import API from "../api";
 import cookie from "react-cookies";
+import { useAuthentication } from "./auth";
 
 export const useRoles = () => {
   const Authorization = cookie.load("Authorization");
   const [roles, setRoles] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [errorMessage, setErrorMessage] = useState(null);
+  const {logout} = useAuthentication();
 
   const getRoles = () => {
     setIsLoading(true);
@@ -28,10 +29,10 @@ export const useRoles = () => {
         const { data, status } = error.response;
         switch (status) {
           case 401:
-            const { message } = data.data[0];
-            setErrorMessage(message);
+            logout();
             break;
           default:
+            console.log(data)
             break;
         }
       })
@@ -42,5 +43,5 @@ export const useRoles = () => {
     getRoles();
   }, []);
 
-  return { roles, isLoading, errorMessage };
+  return { roles, isLoading };
 };

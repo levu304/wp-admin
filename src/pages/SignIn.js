@@ -9,61 +9,16 @@ import {
   Alert,
   Spinner,
 } from "react-bootstrap";
-import { Link, useHistory } from "react-router-dom";
-import { setUser } from "../redux/actions/user";
-import { useDispatch } from "react-redux";
-import cookie from "react-cookies";
-import API from "../api";
-import { LANDING, PASSWORD_FORGET } from "../routes";
+import { Link } from "react-router-dom";
+import { PASSWORD_FORGET } from "../routes";
+import { useAuthentication } from "../hooks/auth";
 
 export default () => {
-  const { replace } = useHistory();
-  const dispatch = useDispatch();
+  const { isSubmit, error, login } = useAuthentication();
 
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [remember, setRemember] = useState(false);
-  const [IsSubmit, setIsSubmit] = useState(false);
-  const [IsError, setIsError] = useState(false);
-  const [errorMessage, setErrorMessage] = useState("");
-
-  const login = (e) => {
-    e.preventDefault();
-    setIsSubmit(true);
-
-    API.post("/login", {
-      user_login: username,
-      user_password: password,
-      remember,
-    })
-      .then((response) => {
-        setIsSubmit(false);
-        const {
-          status,
-          data: { data },
-        } = response;
-        if (status === 200) {
-          const { user, authorization } = data;
-          cookie.save("Authorization", authorization, { path: "/" });
-          cookie.save("user", user, { path: "/" });
-          dispatch(setUser(user));
-          replace(LANDING, "urlhistory");
-        }
-      })
-      .catch((error) => {
-        setIsSubmit(false);
-        const { data, status } = error.response;
-        switch (status) {
-          case 401:
-            const { message } = data.data[0];
-            setErrorMessage(message);
-            break;
-          default:
-            break;
-        }
-        setIsError(true);
-      });
-  };
 
   return (
     <Container className="h-100">
@@ -74,13 +29,11 @@ export default () => {
             offset: 4,
           }}
         >
-          {IsError && (
+          {error && (
             <Alert
               variant="danger"
-              onClose={() => setIsError(false)}
-              dismissible
             >
-              <small dangerouslySetInnerHTML={{ __html: errorMessage }} />
+              <small dangerouslySetInnerHTML={{ __html: error }} />
             </Alert>
           )}
           <Card className="mb-3">
@@ -92,7 +45,7 @@ export default () => {
                     type="text"
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
-                    disabled={IsSubmit}
+                    disabled={isSubmit}
                   />
                 </Form.Group>
 
@@ -102,7 +55,7 @@ export default () => {
                     type="password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    disabled={IsSubmit}
+                    disabled={isSubmit}
                   />
                 </Form.Group>
 
@@ -112,15 +65,16 @@ export default () => {
                       type="checkbox"
                       label="Remember me"
                       checked={remember}
+                      onChange={e => setRemember(e.target.checked)}
                     />
                   </Col>
                   <Col className="text-right">
                     <Button
                       variant="primary"
-                      onClick={login}
-                      disabled={IsSubmit}
+                      onClick={e => login(username, password, remember)}
+                      disabled={isSubmit}
                     >
-                      {IsSubmit ? (
+                      {isSubmit ? (
                         <Fragment>
                           <Spinner
                             as="span"

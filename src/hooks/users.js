@@ -1,12 +1,14 @@
 import { useEffect, useState } from "react";
 import API from "../api";
 import cookie from "react-cookies";
+import { useAuthentication } from "./auth";
 
 export const useUsers = (params) => {
   const Authorization = cookie.load("Authorization");
   const [users, setUsers] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [errorMessage, setErrorMessage] = useState(null);
+
+  const {logout} = useAuthentication();
 
   const getUsers = (params) => {
     setIsLoading(true);
@@ -29,10 +31,10 @@ export const useUsers = (params) => {
         const { data, status } = error.response;
         switch (status) {
           case 401:
-            const { message } = data.data[0];
-            setErrorMessage(message);
+            logout();
             break;
           default:
+            console.log(data)
             break;
         }
       })
@@ -43,5 +45,5 @@ export const useUsers = (params) => {
     getUsers(params);
   }, [params]);
 
-  return { users, isLoading, errorMessage, getUsers };
+  return { users, isLoading, getUsers };
 };

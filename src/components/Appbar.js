@@ -1,9 +1,9 @@
 import React, { memo } from "react";
 import { Navbar, Nav, NavDropdown } from "react-bootstrap";
 import cookie from "react-cookies";
-import { SIGN_IN } from "../routes";
-import { useHistory, Link } from "react-router-dom";
+import { Link } from "react-router-dom";
 import styled from "styled-components";
+import {useAuthentication} from '../hooks/auth'
 
 const CustomNavbar = styled(Navbar)`
   & .dropdown-menu {
@@ -23,17 +23,11 @@ const CustomNavbar = styled(Navbar)`
 `;
 
 export default memo(() => {
-  const { replace } = useHistory();
   const {
     data: { display_name },
   } = cookie.load("user");
-  const logout = (e) => {
-    e.preventDefault();
-    cookie.remove("Authorization", { path: "/" });
-    cookie.remove("token", { path: "/" });
-    cookie.remove("user", { path: "/" });
-    replace(SIGN_IN, "urlhistory");
-  };
+
+  const {logout} = useAuthentication()
 
   return (
     <CustomNavbar bg="dark" variant="dark" expand="lg">
