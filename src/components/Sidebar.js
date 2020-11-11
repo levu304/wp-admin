@@ -11,6 +11,7 @@ import {
   CATEGORIES,
   TAGS,
   USER_NEW,
+  USER_DELETE,
   PROFILE,
   MEDIA_NEW,
   PAGE_NEW,
@@ -336,7 +337,10 @@ export default memo(() => {
 
       <hr />
 
-      {pathname === USERS || pathname === USER_NEW || pathname === PROFILE ? (
+      {pathname === USERS ||
+      pathname === USER_NEW ||
+      pathname === PROFILE ||
+      pathname === USER_DELETE ? (
         <Nav.Item>
           <NavLink
             to={USERS}
@@ -357,7 +361,9 @@ export default memo(() => {
                 <small>
                   <span
                     className={
-                      pathname === USERS ? "font-weight-bold" : undefined
+                      pathname === USERS || pathname === USER_DELETE
+                        ? "font-weight-bold"
+                        : undefined
                     }
                   >
                     All Users

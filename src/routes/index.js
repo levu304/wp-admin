@@ -19,6 +19,7 @@ export const OPTIONS = "/options";
 export const USERS = "/users";
 export const USER_NEW = "/user-new";
 export const USER_EDIT = "/user-edit";
+export const USER_DELETE = "/user-delete";
 export const PROFILE = "/profile";
 
 export const SIGN_IN = "/signin";

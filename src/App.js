@@ -15,6 +15,7 @@ import {
   USER_NEW,
   PROFILE,
   USER_EDIT,
+  USER_DELETE,
   MEDIA_NEW,
   PAGE_NEW,
 } from "./routes";
@@ -38,6 +39,7 @@ import Tags from "./pages/Tags";
 import Categories from "./pages/Categories";
 import UserNew from "./pages/UserNew";
 import Profile from "./pages/Profile";
+import UserDelete from "./pages/UserDelete";
 
 function App() {
   const { toggleLoader } = useSelector((state) => state.settings);
@@ -59,6 +61,7 @@ function App() {
           <PrivateRoute component={Users} path={USERS} exact />
           <PrivateRoute component={UserNew} path={USER_NEW} exact />
           <PrivateRoute component={UserEdit} path={USER_EDIT} />
+          <PrivateRoute component={UserDelete} path={USER_DELETE} />
           <PrivateRoute component={Profile} path={PROFILE} exact />
 
           <Route component={SignIn} path={SIGN_IN} exact />

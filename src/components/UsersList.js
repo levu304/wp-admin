@@ -1,15 +1,16 @@
 import React, { useMemo, useState, useEffect, Fragment } from "react";
 import { Table, Form, FormControl, Button } from "react-bootstrap";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useHistory } from "react-router-dom";
 import { useTable } from "react-table";
 import { useUsers } from "../hooks/users";
-import { POSTS, USERS } from "../routes";
+import { POSTS, USERS, USER_DELETE } from "../routes";
 import { paramsToObject } from "../common";
 import UsersListSub from "./UsersListSub";
 import { useRoles } from "../hooks/roles";
 
 export default () => {
   const { search } = useLocation();
+  const { push } = useHistory();
   const defaultParams = { context: "edit" };
   const params = useMemo(
     () =>
@@ -19,13 +20,18 @@ export default () => {
     [search]
   );
 
+  const { users, getUsers } = useUsers(params);
+  const { roles } = useRoles();
+
+  useEffect(() => {
+    getUsers(params);
+  }, [params]);
+
   const [query, setQuery] = useState("");
   const [checkAll, setCheckAll] = useState(false);
   const [checkRows, setCheckRows] = useState([]);
   const [newRole, setNewRole] = useState("");
-
-  const { users } = useUsers(params);
-  const { roles } = useRoles();
+  const [action, setAction] = useState("");
 
   const data = useMemo(
     () =>
@@ -115,6 +121,24 @@ export default () => {
     data: data,
   });
 
+  const applyAction = (e) => {
+    e.preventDefault();
+    const user = data.find((value, index) => checkRows[index] === true);
+    if (typeof user === "undefined") {
+      return;
+    }
+    switch (action) {
+      case "delete":
+        push(USER_DELETE, {
+          user,
+        });
+        break;
+
+      default:
+        break;
+    }
+  };
+
   const renderCell = ({
     render,
     column: { id: columnId },
@@ -159,7 +183,23 @@ export default () => {
         </div>
       </div>
       <div className="my-3 d-flex flex-row align-items-center justify-content-between">
-        <div>
+        <div className="d-flex flex-row">
+          <Form inline className="mr-3">
+            <Form.Control
+              as="select"
+              size="sm"
+              custom
+              value={action}
+              onChange={(e) => setAction(e.target.value)}
+              className="text-capitalize mr-sm-1"
+            >
+              <option value="">Bulk Actions</option>
+              <option value="delete">Delete</option>
+            </Form.Control>
+            <Button variant="outline-primary" size="sm" onClick={applyAction}>
+              Apply
+            </Button>
+          </Form>
           <Form inline>
             <Form.Control
               as="select"
