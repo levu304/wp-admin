@@ -3,12 +3,14 @@ import { Table, Form, FormControl, Button } from "react-bootstrap";
 import { Link, useLocation, useHistory } from "react-router-dom";
 import { useTable } from "react-table";
 import { useUsers } from "../hooks/users";
-import { POSTS, USERS, USER_DELETE } from "../routes";
+import { POSTS, USERS, USER_DELETE, USER_EDIT } from "../routes";
 import { paramsToObject } from "../common";
 import UsersListSub from "./UsersListSub";
 import { useRoles } from "../hooks/roles";
+import cookie from "react-cookies";
 
 export default () => {
+  const currentUser = cookie.load("user");
   const { search } = useLocation();
   const { push } = useHistory();
   const defaultParams = { context: "edit" };
@@ -32,12 +34,15 @@ export default () => {
   const [checkRows, setCheckRows] = useState([]);
   const [newRole, setNewRole] = useState("");
   const [action, setAction] = useState("");
+  const [rowsHover, setRowsHover] = useState([]);
 
   const data = useMemo(
     () =>
       users.map(({ id, username, name, email, roles, posts }) => {
         checkRows.push(false);
         setCheckRows([...checkRows]);
+        rowsHover.push(false);
+        setRowsHover([...rowsHover]);
         return {
           id,
           username,
@@ -113,7 +118,7 @@ export default () => {
         accessor: "posts",
       },
     ],
-    [checkRows, checkAll]
+    [checkRows, rowsHover, checkAll]
   );
 
   const { getTableProps, headerGroups, rows, prepareRow } = useTable({
@@ -142,15 +147,54 @@ export default () => {
   const renderCell = ({
     render,
     column: { id: columnId },
-    row: {
-      original: { id: userId },
-    },
+    row: { original, index },
   }) => {
     switch (columnId) {
       case "posts":
-        return <Link to={`${POSTS}?author=${userId}`}>{render("Cell")}</Link>;
+        return (
+          <Link to={`${POSTS}?author=${original.id}`}>{render("Cell")}</Link>
+        );
       case "role":
         return <p className="mb-0 text-capitalize">{render("Cell")}</p>;
+      case "email":
+        return <a href={`mailto:${original.email}`}>{render("Cell")}</a>;
+      case "username":
+        return rowsHover[index] ? (
+          <Fragment>
+            <p className="mb-0">{render("Cell")}</p>
+            <div className="d-flex flex-row align-items-center">
+              <Link
+                to={{
+                  pathname: USER_EDIT,
+                  state: {
+                    user: users[index],
+                  },
+                }}
+              >
+                <small>Edit</small>
+              </Link>
+              {currentUser.ID !== original.id && (
+                <Fragment>
+                  <span className="mx-2">{`|`}</span>
+                  <Link
+                    to={{
+                      pathname: USER_DELETE,
+                      state: {
+                        user: users[index],
+                      },
+                    }}
+                    className="text-danger"
+                  >
+                    <small>Delete</small>
+                  </Link>
+                </Fragment>
+              )}
+              {/* <Link>View</Link> */}
+            </div>
+          </Fragment>
+        ) : (
+          render("Cell")
+        );
       default:
         return render("Cell");
     }
@@ -249,8 +293,25 @@ export default () => {
             return (
               <tr {...row.getRowProps()}>
                 {row.cells.map((cell) => {
-                  const { getCellProps } = cell;
-                  return <td {...getCellProps()}>{renderCell(cell)}</td>;
+                  const {
+                    getCellProps,
+                    row: { index },
+                  } = cell;
+                  return (
+                    <td
+                      {...getCellProps()}
+                      onMouseEnter={() => {
+                        rowsHover[index] = true;
+                        setRowsHover([...rowsHover]);
+                      }}
+                      onMouseLeave={() => {
+                        rowsHover[index] = false;
+                        setRowsHover([...rowsHover]);
+                      }}
+                    >
+                      {renderCell(cell)}
+                    </td>
+                  );
                 })}
               </tr>
             );

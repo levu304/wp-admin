@@ -12,6 +12,7 @@ import {
   TAGS,
   USER_NEW,
   USER_DELETE,
+  USER_EDIT,
   PROFILE,
   MEDIA_NEW,
   PAGE_NEW,
@@ -340,7 +341,8 @@ export default memo(() => {
       {pathname === USERS ||
       pathname === USER_NEW ||
       pathname === PROFILE ||
-      pathname === USER_DELETE ? (
+      pathname === USER_DELETE ||
+      pathname === USER_EDIT ? (
         <Nav.Item>
           <NavLink
             to={USERS}
@@ -361,7 +363,9 @@ export default memo(() => {
                 <small>
                   <span
                     className={
-                      pathname === USERS || pathname === USER_DELETE
+                      pathname === USERS ||
+                      pathname === USER_DELETE ||
+                      pathname === USER_EDIT
                         ? "font-weight-bold"
                         : undefined
                     }

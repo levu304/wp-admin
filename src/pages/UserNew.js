@@ -3,6 +3,7 @@ import PageTitle from "../components/PageTitle";
 import { Form, Row, Col, Button } from "react-bootstrap";
 import { useRoles } from "../hooks/roles";
 import { useUsers } from "../hooks/users";
+import Main from "../components/Main";
 
 export default () => {
   const { roles } = useRoles();
@@ -16,7 +17,7 @@ export default () => {
   const [role, setRole] = useState("subscriber");
 
   return (
-    <div>
+    <Main>
       <PageTitle title="Add New User" />
       <p>
         <small>Create a brand new user and add them to this site.</small>
@@ -24,7 +25,7 @@ export default () => {
 
       <Form>
         <Form.Group as={Row} className="align-items-center">
-          <Form.Label column lg="2">
+          <Form.Label column lg="3">
             <small className="font-weight-bold">
               Username <span className="font-italic">(required)</span>
             </small>
@@ -39,7 +40,7 @@ export default () => {
           </Col>
         </Form.Group>
         <Form.Group as={Row} className="align-items-center">
-          <Form.Label column lg="2">
+          <Form.Label column lg="3">
             <small className="font-weight-bold">
               Email <span className="font-italic">(required)</span>
             </small>
@@ -54,7 +55,7 @@ export default () => {
           </Col>
         </Form.Group>
         <Form.Group as={Row} className="align-items-center">
-          <Form.Label column lg="2">
+          <Form.Label column lg="3">
             <small className="font-weight-bold">First Name</small>
           </Form.Label>
           <Col lg="5">
@@ -67,7 +68,7 @@ export default () => {
           </Col>
         </Form.Group>
         <Form.Group as={Row} className="align-items-center">
-          <Form.Label column lg="2">
+          <Form.Label column lg="3">
             <small className="font-weight-bold">Last Name</small>
           </Form.Label>
           <Col lg="5">
@@ -80,7 +81,7 @@ export default () => {
           </Col>
         </Form.Group>
         <Form.Group as={Row} className="align-items-center">
-          <Form.Label column lg="2">
+          <Form.Label column lg="3">
             <small className="font-weight-bold">Password</small>
           </Form.Label>
           <Col lg="5">
@@ -93,7 +94,7 @@ export default () => {
           </Col>
         </Form.Group>
         <Form.Group as={Row} className="align-items-center">
-          <Form.Label column lg="2">
+          <Form.Label column lg="3">
             <small className="font-weight-bold">Role</small>
           </Form.Label>
           <Col lg="2">
@@ -136,6 +137,6 @@ export default () => {
           Add New User
         </Button>
       </Form>
-    </div>
+    </Main>
   );
 };

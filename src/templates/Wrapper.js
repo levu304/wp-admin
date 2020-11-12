@@ -8,12 +8,12 @@ export default memo(({ children }) => {
     <Fragment>
       <Appbar />
 
-      <Container fluid className="h-100 overflow-hidden">
-        <Row className="h-100 overflow-hidden">
+      <Container fluid className="h-100">
+        <Row className="h-100">
           <Col lg={2} className="h-100 bg-dark px-0">
             <Sidebar />
           </Col>
-          <Col lg={10} className="py-3">
+          <Col lg={10} className="h-100">
             {children}
           </Col>
         </Row>

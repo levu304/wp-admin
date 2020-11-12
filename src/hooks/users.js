@@ -10,6 +10,8 @@ export const useUsers = (params) => {
   const { push, replace } = useHistory();
   const [users, setUsers] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [hashPassword, setHashPassword] = useState(null);
+  const [updated, setUpdated] = useState(false);
 
   const { logout } = useAuthentication();
 
@@ -45,6 +47,7 @@ export const useUsers = (params) => {
   };
 
   const addUser = (body) => {
+    setIsLoading(true);
     API.post("/users", body, {
       headers: {
         Authorization,
@@ -73,7 +76,45 @@ export const useUsers = (params) => {
       .finally(() => setIsLoading(false));
   };
 
+  const updateUser = (body, newPassword) => {
+    setIsLoading(true);
+    API.post(
+      `/users/${body.id}`,
+      newPassword && newPassword !== ""
+        ? { ...body, password: newPassword }
+        : body,
+      {
+        headers: {
+          Authorization,
+        },
+      }
+    )
+      .then((response) => {
+        const {
+          status,
+          data: { data },
+        } = response;
+        if (status === 200) {
+          setUpdated(true);
+        }
+      })
+      .catch((error) => {
+        const { data, status } = error.response;
+        console.log(error.response);
+        switch (status) {
+          case 401:
+            logout();
+            break;
+          default:
+            console.log(data);
+            break;
+        }
+      })
+      .finally(() => setIsLoading(false));
+  };
+
   const deleteUser = (params) => {
+    setIsLoading(true);
     API.delete(`/users/${params.id}`, {
       headers: {
         Authorization,
@@ -103,9 +144,53 @@ export const useUsers = (params) => {
       .finally(() => setIsLoading(false));
   };
 
+  const generatePassword = () => {
+    API.get(`/generate-password`, {
+      headers: {
+        Authorization,
+      },
+    })
+      .then((response) => {
+        const {
+          status,
+          data: { data },
+        } = response;
+        if (status === 200) {
+          console.log(data);
+          setHashPassword(data);
+        }
+      })
+      .catch((error) => {
+        const { data, status } = error.response;
+        switch (status) {
+          case 401:
+            logout();
+            break;
+          default:
+            console.log(data);
+            break;
+        }
+      });
+  };
+
+  const toggleUpdateAlert = () => setUpdated(!updated);
+
   useEffect(() => {
-    getUsers(params);
+    if (typeof params !== "undefined") {
+      getUsers(params);
+    }
   }, []);
 
-  return { users, isLoading, getUsers, addUser, deleteUser };
+  return {
+    users,
+    hashPassword,
+    isLoading,
+    updated,
+    getUsers,
+    addUser,
+    deleteUser,
+    updateUser,
+    generatePassword,
+    toggleUpdateAlert,
+  };
 };

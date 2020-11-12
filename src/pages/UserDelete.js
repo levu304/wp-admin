@@ -3,6 +3,7 @@ import PageTitle from "../components/PageTitle";
 import { Button, Form } from "react-bootstrap";
 import { useLocation } from "react-router-dom";
 import { useUsers } from "../hooks/users";
+import Main from "../components/Main";
 
 export default () => {
   const {
@@ -21,7 +22,7 @@ export default () => {
   }, [users]);
 
   return (
-    <div>
+    <Main>
       <PageTitle title="Delete Users" />
 
       <p>You have specified this user for deletion:</p>
@@ -77,6 +78,6 @@ export default () => {
           Confirm Deletion
         </Button>
       </Form>
-    </div>
+    </Main>
   );
 };

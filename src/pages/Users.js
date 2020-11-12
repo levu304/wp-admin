@@ -4,10 +4,11 @@ import PageTitle from "../components/PageTitle";
 import { Button } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import { USER_NEW } from "../routes";
+import Main from "../components/Main";
 
 export default () => {
   return (
-    <div>
+    <Main>
       <div className="d-flex flex-row align-items-center">
         <PageTitle title="Users" />
         <Button
@@ -21,6 +22,6 @@ export default () => {
         </Button>
       </div>
       <UsersList />
-    </div>
+    </Main>
   );
 };
