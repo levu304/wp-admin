@@ -3,7 +3,8 @@ import { Navbar, Nav, NavDropdown } from "react-bootstrap";
 import cookie from "react-cookies";
 import { Link } from "react-router-dom";
 import styled from "styled-components";
-import {useAuthentication} from '../hooks/auth'
+import { useAuthentication } from "../hooks/auth";
+import { PROFILE } from "../routes";
 
 const CustomNavbar = styled(Navbar)`
   & .dropdown-menu {
@@ -23,11 +24,9 @@ const CustomNavbar = styled(Navbar)`
 `;
 
 export default memo(() => {
-  const {
-    data: { display_name },
-  } = cookie.load("user");
+  const user = cookie.load("user");
 
-  const {logout} = useAuthentication()
+  const { logout } = useAuthentication();
 
   return (
     <CustomNavbar bg="dark" variant="dark" expand="lg">
@@ -41,10 +40,16 @@ export default memo(() => {
       </Nav>
       <Navbar.Collapse id="basic-navbar-nav">
         <Nav className="ml-auto">
-          <NavDropdown title={display_name} alignRight size="sm">
-            <Link to="/profile" className="dropdown-item">
+          <NavDropdown title={user.name} alignRight size="sm">
+            <NavDropdown.Item
+              as={Link}
+              to={{
+                pathname: PROFILE,
+                state: { user },
+              }}
+            >
               Edit profile
-            </Link>
+            </NavDropdown.Item>
             <NavDropdown.Divider />
             <NavDropdown.Item onClick={logout}>Logout</NavDropdown.Item>
           </NavDropdown>

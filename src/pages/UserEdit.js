@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useMemo } from "react";
+import React, { useState, useEffect, useRef, Fragment } from "react";
 import { useLocation, Link } from "react-router-dom";
 import { Button, Form, Row, Col, Image, Alert } from "react-bootstrap";
 import PageTitle from "../components/PageTitle";
@@ -8,7 +8,6 @@ import { useUsers } from "../hooks/users";
 import Section from "../components/Section";
 import Main from "../components/Main";
 import { FaLongArrowAltLeft } from "react-icons/fa";
-import parse from "html-react-parser";
 import { useSettings } from "../hooks/settings";
 
 export default () => {
@@ -23,8 +22,8 @@ export default () => {
     generatePassword,
     updateUser,
   } = useUsers();
-  const { languages } = useSettings();
   const ref = useRef();
+  const { languages } = useSettings();
 
   const [role, setRole] = useState(user.roles[0]);
   const [first_name, setFirstName] = useState(user.first_name);
@@ -35,21 +34,13 @@ export default () => {
   const [url, setURL] = useState(user.url);
   const [description, setDescription] = useState(user.description);
   const [password, setPassword] = useState(hashPassword);
-
-  // console.log(user);
+  const [locale, setLocale] = useState(user.locale);
 
   useEffect(() => {
     if (hashPassword) {
       setPassword(hashPassword);
     }
   }, [hashPassword]);
-
-  const dom = useMemo(() => {
-    if (languages !== "") {
-      return parse(languages);
-    }
-    return null;
-  }, [languages]);
 
   return (
     <Main className="pt-4 pb-5" ref={ref}>
@@ -82,7 +73,21 @@ export default () => {
             <Form.Label column lg="3">
               <small className="font-weight-bold">Language</small>
             </Form.Label>
-            <Col lg="5">{dom}</Col>
+            <Col lg="2">
+              <Form.Control
+                as="select"
+                size="sm"
+                custom
+                value={locale}
+                onChange={(e) => setLocale(e.target.value)}
+              >
+                {languages.map(({ native_name, language }, index) => (
+                  <option key={index} value={language}>
+                    {native_name}
+                  </option>
+                ))}
+              </Form.Control>
+            </Col>
           </Form.Group>
         </Section>
 
@@ -101,27 +106,33 @@ export default () => {
             </Col>
           </Form.Group>
 
-          <Form.Group as={Row} className="align-items-center">
-            <Form.Label column lg="3">
-              <small className="font-weight-bold">Role</small>
-            </Form.Label>
-            <Col lg="2">
-              <Form.Control
-                as="select"
-                size="sm"
-                custom
-                value={role}
-                onChange={(e) => setRole(e.target.value)}
-                className="text-capitalize"
-              >
-                {roles.map(({ name }, index) => (
-                  <option key={index} value={name} className="text-capitalize">
-                    {name}
-                  </option>
-                ))}
-              </Form.Control>
-            </Col>
-          </Form.Group>
+          {user.roles[0] === "administrator" && (
+            <Form.Group as={Row} className="align-items-center">
+              <Form.Label column lg="3">
+                <small className="font-weight-bold">Role</small>
+              </Form.Label>
+              <Col lg="2">
+                <Form.Control
+                  as="select"
+                  size="sm"
+                  custom
+                  value={role}
+                  onChange={(e) => setRole(e.target.value)}
+                  className="text-capitalize"
+                >
+                  {roles.map(({ name }, index) => (
+                    <option
+                      key={index}
+                      value={name}
+                      className="text-capitalize"
+                    >
+                      {name}
+                    </option>
+                  ))}
+                </Form.Control>
+              </Col>
+            </Form.Group>
+          )}
 
           <Form.Group as={Row} className="align-items-center">
             <Form.Label column lg="3">
@@ -180,8 +191,14 @@ export default () => {
                 value={display_name}
                 onChange={(e) => setDisplayName(e.target.value)}
               >
-                <option value={user.name}>{user.name}</option>
-                <option value={user.username}>{user.username}</option>
+                {user.username === user.name ? (
+                  <option value={user.name}>{user.name}</option>
+                ) : (
+                  <Fragment>
+                    <option value={user.name}>{user.name}</option>
+                    <option value={user.username}>{user.username}</option>
+                  </Fragment>
+                )}
               </Form.Control>
             </Col>
           </Form.Group>
@@ -299,6 +316,7 @@ export default () => {
                   url,
                   description,
                   roles: [role],
+                  locale,
                 },
                 password
               );

@@ -2,12 +2,17 @@ import { useEffect, useState } from "react";
 import API from "../api";
 import cookie from "react-cookies";
 import { useAuthentication } from "./auth";
+import { useDispatch, useSelector } from "react-redux";
+import { setRoles } from "../redux/actions/role";
+import { useRef } from "react";
 
 export const useRoles = () => {
   const Authorization = cookie.load("Authorization");
-  const [roles, setRoles] = useState([]);
+  const user = cookie.load("user");
   const [isLoading, setIsLoading] = useState(false);
-  const {logout} = useAuthentication();
+  const { logout } = useAuthentication();
+  const { roles } = useSelector((state) => state.role);
+  const dispatch = useDispatch();
 
   const getRoles = () => {
     setIsLoading(true);
@@ -22,7 +27,7 @@ export const useRoles = () => {
           data: { data },
         } = response;
         if (status === 200) {
-          setRoles(data);
+          dispatch(setRoles(data));
         }
       })
       .catch((error) => {
@@ -32,7 +37,7 @@ export const useRoles = () => {
             logout();
             break;
           default:
-            console.log(data)
+            console.log(data);
             break;
         }
       })
@@ -40,8 +45,10 @@ export const useRoles = () => {
   };
 
   useEffect(() => {
-    getRoles();
-  }, []);
+    if (user.roles[0] === "administrator" && roles.length === 0) {
+      getRoles();
+    }
+  }, [roles]);
 
   return { roles, isLoading };
 };

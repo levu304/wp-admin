@@ -22,8 +22,18 @@ export default () => {
     [search]
   );
 
-  const { users, getUsers } = useUsers(params);
+  const { users, updated, getUsers, updateUser, toggleUpdateAlert } = useUsers(
+    params
+  );
   const { roles } = useRoles();
+
+  useEffect(() => {
+    if (updated) {
+      getUsers(params);
+      setNewRole("");
+      toggleUpdateAlert();
+    }
+  }, [updated]);
 
   useEffect(() => {
     getUsers(params);
@@ -39,10 +49,12 @@ export default () => {
   const data = useMemo(
     () =>
       users.map(({ id, username, name, email, roles, posts }) => {
-        checkRows.push(false);
-        setCheckRows([...checkRows]);
-        rowsHover.push(false);
-        setRowsHover([...rowsHover]);
+        const rows = [];
+        const hovers = [];
+        rows.push(false);
+        setCheckRows([...rows]);
+        hovers.push(false);
+        setRowsHover([...hovers]);
         return {
           id,
           username,
@@ -142,6 +154,29 @@ export default () => {
       default:
         break;
     }
+  };
+
+  const changeRole = (e) => {
+    e.preventDefault();
+    if (newRole === "") {
+      return;
+    }
+    const user = data.find((value, index) => checkRows[index] === true);
+    if (typeof user === "undefined") {
+      return;
+    }
+    updateUser({
+      id: user.id,
+      first_name: user.first_name,
+      last_name: user.last_name,
+      nickname: user.nickname,
+      name: user.display_name,
+      email: user.email,
+      url: user.url,
+      description: user.description,
+      roles: [newRole],
+      locale: [user.locale],
+    });
   };
 
   const renderCell = ({
@@ -265,8 +300,9 @@ export default () => {
               to={query === "" ? USERS : USERS + `?search=${query}`}
               variant="outline-primary"
               size="sm"
+              onClick={changeRole}
             >
-              Search
+              Change
             </Button>
           </Form>
         </div>

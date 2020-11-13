@@ -22,9 +22,11 @@ import {
   FaImages,
   FaComments,
   FaUsers,
+  FaUser,
   FaCopy,
 } from "react-icons/fa";
 import styled from "styled-components";
+import cookie from "react-cookies";
 
 const Sidebar = styled(Nav)`
   & a:hover,
@@ -62,6 +64,7 @@ const Sidebar = styled(Nav)`
 
 export default memo(() => {
   const { pathname } = useLocation();
+  const user = cookie.load("user");
 
   return (
     <Sidebar activeKey={pathname} className="flex-column">
@@ -338,11 +341,27 @@ export default memo(() => {
 
       <hr />
 
-      {pathname === USERS ||
-      pathname === USER_NEW ||
-      pathname === PROFILE ||
-      pathname === USER_DELETE ||
-      pathname === USER_EDIT ? (
+      {typeof user.capabilities["list_users"] === "undefined" ? (
+        <Nav.Item className={pathname === PROFILE ? "bg-primary" : undefined}>
+          <NavLink
+            to={{
+              pathname: PROFILE,
+              state: {
+                user,
+              },
+            }}
+            activeClassName="active"
+            className="nav-link d-flex align-items-center px-4 text-white"
+          >
+            <FaUser className="mr-2" />
+            Profile
+          </NavLink>
+        </Nav.Item>
+      ) : pathname === USERS ||
+        pathname === USER_NEW ||
+        pathname === PROFILE ||
+        pathname === USER_DELETE ||
+        pathname === USER_EDIT ? (
         <Nav.Item>
           <NavLink
             to={USERS}
@@ -394,7 +413,12 @@ export default memo(() => {
             </Nav.Item>
             <Nav.Item>
               <NavLink
-                to={PROFILE}
+                to={{
+                  pathname: PROFILE,
+                  state: {
+                    user,
+                  },
+                }}
                 activeClassName="active"
                 className="nav-link d-flex align-items-center px-4 text-white"
               >
@@ -431,7 +455,16 @@ export default memo(() => {
           <NavDropdown.Item className="text-white" as={Link} to={USER_NEW}>
             Add new
           </NavDropdown.Item>
-          <NavDropdown.Item className="text-white" as={Link} to={PROFILE}>
+          <NavDropdown.Item
+            className="text-white"
+            as={Link}
+            to={{
+              pathname: PROFILE,
+              state: {
+                user,
+              },
+            }}
+          >
             Your Profile
           </NavDropdown.Item>
         </NavDropdown>

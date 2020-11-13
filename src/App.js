@@ -38,7 +38,6 @@ import PostNew from "./pages/PostNew";
 import Tags from "./pages/Tags";
 import Categories from "./pages/Categories";
 import UserNew from "./pages/UserNew";
-import Profile from "./pages/Profile";
 import UserDelete from "./pages/UserDelete";
 
 function App() {
@@ -62,7 +61,7 @@ function App() {
           <PrivateRoute component={UserNew} path={USER_NEW} exact />
           <PrivateRoute component={UserEdit} path={USER_EDIT} />
           <PrivateRoute component={UserDelete} path={USER_DELETE} />
-          <PrivateRoute component={Profile} path={PROFILE} exact />
+          <PrivateRoute component={UserEdit} path={PROFILE} exact />
 
           <Route component={SignIn} path={SIGN_IN} exact />
           <Route component={ForgotPassword} path={PASSWORD_FORGET} exact />

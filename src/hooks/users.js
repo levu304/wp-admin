@@ -54,6 +54,7 @@ export const useUsers = (params) => {
       },
     })
       .then((response) => {
+        setIsLoading(false);
         const {
           status,
           data: { data },
@@ -63,6 +64,7 @@ export const useUsers = (params) => {
         }
       })
       .catch((error) => {
+        setIsLoading(false);
         const { data, status } = error.response;
         switch (status) {
           case 401:
@@ -72,8 +74,7 @@ export const useUsers = (params) => {
             console.log(data);
             break;
         }
-      })
-      .finally(() => setIsLoading(false));
+      });
   };
 
   const updateUser = (body, newPassword) => {
@@ -122,6 +123,7 @@ export const useUsers = (params) => {
       params,
     })
       .then((response) => {
+        setIsLoading(false);
         const {
           status,
           data: { data },
@@ -131,6 +133,7 @@ export const useUsers = (params) => {
         }
       })
       .catch((error) => {
+        setIsLoading(false);
         const { data, status } = error.response;
         switch (status) {
           case 401:
@@ -140,8 +143,7 @@ export const useUsers = (params) => {
             console.log(data);
             break;
         }
-      })
-      .finally(() => setIsLoading(false));
+      });
   };
 
   const generatePassword = () => {
@@ -156,7 +158,6 @@ export const useUsers = (params) => {
           data: { data },
         } = response;
         if (status === 200) {
-          console.log(data);
           setHashPassword(data);
         }
       })

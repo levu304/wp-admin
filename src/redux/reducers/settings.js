@@ -1,5 +1,6 @@
 const initState = {
   toggleLoader: false,
+  languages: [],
 };
 
 export default (state = initState, { type, payload }) => {
@@ -8,6 +9,11 @@ export default (state = initState, { type, payload }) => {
       return {
         ...state,
         toggleLoader: payload.toggle,
+      };
+    case "SET_LANGUAGES":
+      return {
+        ...state,
+        languages: payload.languages,
       };
     default:
       return state;

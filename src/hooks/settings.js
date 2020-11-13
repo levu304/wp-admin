@@ -1,10 +1,15 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import API from "../api";
 import cookie from "react-cookies";
+import { useAuthentication } from "./auth";
+import { useDispatch, useSelector } from "react-redux";
+import { setLanguages } from "../redux/actions/settings";
 
 export const useSettings = () => {
   const Authorization = cookie.load("Authorization");
-  const [languages, setLanguages] = useState("");
+  const { logout } = useAuthentication();
+  const dispatch = useDispatch();
+  const { languages } = useSelector((state) => state.settings);
 
   const getLanguages = () => {
     API.get("/settings/languages", {
@@ -15,15 +20,14 @@ export const useSettings = () => {
       .then((response) => {
         const { status, data } = response;
         if (status === 200) {
-          setLanguages(data);
+          dispatch(setLanguages(data));
         }
       })
       .catch((error) => {
-        console.log(error.response);
         const { data, status } = error.response;
         switch (status) {
           case 401:
-            // logout();
+            logout();
             break;
           default:
             console.log(data);
@@ -33,8 +37,10 @@ export const useSettings = () => {
   };
 
   useEffect(() => {
-    getLanguages();
-  }, []);
+    if (languages.length === 0) {
+      getLanguages();
+    }
+  }, [languages]);
 
   return { languages };
 };
