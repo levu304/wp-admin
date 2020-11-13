@@ -4,7 +4,6 @@ import cookie from "react-cookies";
 import { useAuthentication } from "./auth";
 import { useDispatch, useSelector } from "react-redux";
 import { setRoles } from "../redux/actions/role";
-import { useRef } from "react";
 
 export const useRoles = () => {
   const Authorization = cookie.load("Authorization");
