@@ -28,6 +28,7 @@ export const useUsers = (params) => {
           status,
           data: { data },
         } = response;
+        console.log(response.data);
         if (status === 200) {
           setUsers(data);
         }
@@ -46,12 +47,14 @@ export const useUsers = (params) => {
       .finally(() => setIsLoading(false));
   };
 
-  const addUser = (body) => {
+  const addUser = (params) => {
+    const user = cookie.load('user');
     setIsLoading(true);
-    API.post("/users", body, {
+    API.post("/users", null, {
       headers: {
         Authorization,
       },
+      params: {...params, id: user.ID}
     })
       .then((response) => {
         setIsLoading(false);
@@ -77,17 +80,18 @@ export const useUsers = (params) => {
       });
   };
 
-  const updateUser = (body, newPassword) => {
+  const updateUser = (params, newPassword) => {
     setIsLoading(true);
     API.post(
-      `/users/${body.id}`,
-      newPassword && newPassword !== ""
-        ? { ...body, password: newPassword }
-        : body,
+      `/users/${params.id}`,
+      null,
       {
         headers: {
           Authorization,
         },
+        params: newPassword && newPassword !== ""
+        ? { ...params, password: newPassword }
+        : params,
       }
     )
       .then((response) => {

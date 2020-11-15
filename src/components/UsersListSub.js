@@ -12,12 +12,12 @@ export default memo(({ roles }) => {
         index !== roles.length ? (
           <Fragment key={index}>
             <span className="mx-2">{" | "}</span>
-            <Link to={USERS + `?roles=${name}`}>
+            <Link to={USERS + `?roles[]=${name}`}>
               <small>{name.charAt(0).toUpperCase() + name.slice(1)}</small>
             </Link>
           </Fragment>
         ) : (
-          <Link key={index} to={USERS + `?roles=${name}`}>
+          <Link key={index} to={USERS + `?roles[]=${name}`}>
             <small>{name.charAt(0).toUpperCase() + name.slice(1)}</small>
           </Link>
         )

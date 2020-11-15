@@ -14,6 +14,5 @@ export default () => {
     [search]
   );
   const { posts } = usePosts(params);
-  console.log(posts);
   return null;
 };

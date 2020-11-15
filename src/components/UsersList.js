@@ -46,6 +46,8 @@ export default () => {
   const [action, setAction] = useState("");
   const [rowsHover, setRowsHover] = useState([]);
 
+  console.log(users);
+
   const data = useMemo(
     () =>
       users.map(({ id, username, name, email, roles, posts }) => {
