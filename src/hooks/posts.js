@@ -1,9 +1,9 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import cookie from "react-cookies";
 import API from "../api";
 
-export const usePosts = (params) => {
+export const usePosts = () => {
   const Authorization = cookie.load("Authorization");
   const [posts, setPosts] = useState([]);
 
@@ -35,12 +35,6 @@ export const usePosts = (params) => {
         }
       });
   };
-
-  useEffect(() => {
-    if (typeof params !== "undefined") {
-      getPosts(params);
-    }
-  }, []);
 
   return { posts, getPosts };
 };

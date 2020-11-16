@@ -3,6 +3,7 @@ export const DASHBOARD = "/dashboard";
 
 export const POSTS = "/posts";
 export const POST_NEW = "/post-new";
+export const POST_EDIT = "/post-edit";
 export const CATEGORIES = "/categories";
 export const TAGS = "/tags";
 

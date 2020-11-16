@@ -445,7 +445,7 @@ export default memo(() => {
           }
           title={
             <Fragment>
-              <FaComments className="mr-2" /> Users
+              <FaUsers className="mr-2" /> Users
             </Fragment>
           }
         >

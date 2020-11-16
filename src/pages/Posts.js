@@ -1,18 +1,28 @@
-import React, { useMemo } from "react";
-import { usePosts } from "../hooks/posts";
-import { useLocation } from "react-router-dom";
-import { paramsToObject } from "../common";
+import React from "react";
+import Main from "../components/Main";
+import PageTitle from "../components/PageTitle";
+import { Button } from "react-bootstrap";
+import { Link } from "react-router-dom";
+import { POST_NEW } from "../routes";
+import PostsList from "../components/PostsList";
 
 export default () => {
-  const { search } = useLocation();
-  const defaultParams = { context: "edit" };
-  const params = useMemo(
-    () =>
-      search !== ""
-        ? { ...defaultParams, ...paramsToObject(search) }
-        : defaultParams,
-    [search]
+  return (
+    <Main>
+      <div className="d-flex flex-row align-items-center">
+        <PageTitle title="Posts" />
+        <Button
+          as={Link}
+          to={POST_NEW}
+          size="sm"
+          variant="outline-primary"
+          className="ml-3 font-weight-bold"
+        >
+          Add new
+        </Button>
+      </div>
+
+      <PostsList />
+    </Main>
   );
-  const { posts } = usePosts(params);
-  return null;
 };

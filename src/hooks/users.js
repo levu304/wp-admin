@@ -1,11 +1,11 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import API from "../api";
 import cookie from "react-cookies";
 import { useAuthentication } from "./auth";
 import { useHistory } from "react-router-dom";
 import { USERS } from "../routes";
 
-export const useUsers = (params) => {
+export const useUsers = () => {
   const Authorization = cookie.load("Authorization");
   const { push, replace } = useHistory();
   const [users, setUsers] = useState([]);
@@ -28,7 +28,6 @@ export const useUsers = (params) => {
           status,
           data: { data },
         } = response;
-        console.log(response.data);
         if (status === 200) {
           setUsers(data);
         }
@@ -48,13 +47,13 @@ export const useUsers = (params) => {
   };
 
   const addUser = (params) => {
-    const user = cookie.load('user');
+    const user = cookie.load("user");
     setIsLoading(true);
     API.post("/users", null, {
       headers: {
         Authorization,
       },
-      params: {...params, id: user.ID}
+      params: { ...params, id: user.ID },
     })
       .then((response) => {
         setIsLoading(false);
@@ -82,18 +81,15 @@ export const useUsers = (params) => {
 
   const updateUser = (params, newPassword) => {
     setIsLoading(true);
-    API.post(
-      `/users/${params.id}`,
-      null,
-      {
-        headers: {
-          Authorization,
-        },
-        params: newPassword && newPassword !== ""
-        ? { ...params, password: newPassword }
-        : params,
-      }
-    )
+    API.post(`/users/${params.id}`, null, {
+      headers: {
+        Authorization,
+      },
+      params:
+        newPassword && newPassword !== ""
+          ? { ...params, password: newPassword }
+          : params,
+    })
       .then((response) => {
         const {
           status,
@@ -179,12 +175,6 @@ export const useUsers = (params) => {
   };
 
   const toggleUpdateAlert = () => setUpdated(!updated);
-
-  useEffect(() => {
-    if (typeof params !== "undefined") {
-      getUsers(params);
-    }
-  }, []);
 
   return {
     users,

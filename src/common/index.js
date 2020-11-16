@@ -14,3 +14,6 @@ export const isObjectEmpty = (obj) => {
   }
   return true;
 };
+
+export const toCapitalize = (string) =>
+  string.charAt(0).toUpperCase() + string.slice(1);

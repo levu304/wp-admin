@@ -22,9 +22,13 @@ export default () => {
     [search]
   );
 
-  const { users, updated, getUsers, updateUser, toggleUpdateAlert } = useUsers(
-    params
-  );
+  const {
+    users,
+    updated,
+    getUsers,
+    updateUser,
+    toggleUpdateAlert,
+  } = useUsers();
   const { roles } = useRoles();
 
   useEffect(() => {
@@ -42,11 +46,9 @@ export default () => {
   const [query, setQuery] = useState("");
   const [checkAll, setCheckAll] = useState(false);
   const [checkRows, setCheckRows] = useState([]);
+  const [rowsHover, setRowsHover] = useState([]);
   const [newRole, setNewRole] = useState("");
   const [action, setAction] = useState("");
-  const [rowsHover, setRowsHover] = useState([]);
-
-  console.log(users);
 
   const data = useMemo(
     () =>
@@ -114,22 +116,96 @@ export default () => {
       {
         Header: "Username",
         accessor: "username",
+        Cell: ({
+          row: {
+            index,
+            original: { username, id },
+          },
+        }) =>
+          rowsHover[index] ? (
+            <Fragment>
+              <p className="mb-0">{username}</p>
+              <div className="d-flex flex-row align-items-center">
+                <Link
+                  to={{
+                    pathname: USER_EDIT,
+                    state: {
+                      user: users[index],
+                    },
+                  }}
+                >
+                  <small>Edit</small>
+                </Link>
+                {currentUser.ID !== id && (
+                  <Fragment>
+                    <span className="mx-2">{`|`}</span>
+                    <Link
+                      to={{
+                        pathname: USER_DELETE,
+                        state: {
+                          user: users[index],
+                        },
+                      }}
+                      className="text-danger"
+                    >
+                      <small>Delete</small>
+                    </Link>
+                  </Fragment>
+                )}
+                {/* <Link>View</Link> */}
+              </div>
+            </Fragment>
+          ) : (
+            <small>{username}</small>
+          ),
       },
       {
         Header: "Name",
         accessor: "name",
+        Cell: ({
+          row: {
+            original: { name },
+          },
+        }) => <small>{name}</small>,
       },
       {
         Header: "Email",
         accessor: "email",
+        Cell: ({
+          row: {
+            original: { email },
+          },
+        }) => (
+          <a href={`mailto:${email}`}>
+            <small>{email}</small>
+          </a>
+        ),
       },
       {
         Header: "Role",
         accessor: "role",
+        Cell: ({
+          row: {
+            original: { role },
+          },
+        }) => (
+          <p className="mb-0 text-capitalize">
+            <small>{role}</small>
+          </p>
+        ),
       },
       {
         Header: "Posts",
         accessor: "posts",
+        Cell: ({
+          row: {
+            original: { id, posts },
+          },
+        }) => (
+          <Link to={`${POSTS}?author=${id}`}>
+            <small>{posts}</small>
+          </Link>
+        ),
       },
     ],
     [checkRows, rowsHover, checkAll]
@@ -137,7 +213,7 @@ export default () => {
 
   const { getTableProps, headerGroups, rows, prepareRow } = useTable({
     columns,
-    data: data,
+    data,
   });
 
   const applyAction = (e) => {
@@ -179,62 +255,6 @@ export default () => {
       roles: [newRole],
       locale: [user.locale],
     });
-  };
-
-  const renderCell = ({
-    render,
-    column: { id: columnId },
-    row: { original, index },
-  }) => {
-    switch (columnId) {
-      case "posts":
-        return (
-          <Link to={`${POSTS}?author=${original.id}`}>{render("Cell")}</Link>
-        );
-      case "role":
-        return <p className="mb-0 text-capitalize">{render("Cell")}</p>;
-      case "email":
-        return <a href={`mailto:${original.email}`}>{render("Cell")}</a>;
-      case "username":
-        return rowsHover[index] ? (
-          <Fragment>
-            <p className="mb-0">{render("Cell")}</p>
-            <div className="d-flex flex-row align-items-center">
-              <Link
-                to={{
-                  pathname: USER_EDIT,
-                  state: {
-                    user: users[index],
-                  },
-                }}
-              >
-                <small>Edit</small>
-              </Link>
-              {currentUser.ID !== original.id && (
-                <Fragment>
-                  <span className="mx-2">{`|`}</span>
-                  <Link
-                    to={{
-                      pathname: USER_DELETE,
-                      state: {
-                        user: users[index],
-                      },
-                    }}
-                    className="text-danger"
-                  >
-                    <small>Delete</small>
-                  </Link>
-                </Fragment>
-              )}
-              {/* <Link>View</Link> */}
-            </div>
-          </Fragment>
-        ) : (
-          render("Cell")
-        );
-      default:
-        return render("Cell");
-    }
   };
 
   return (
@@ -334,6 +354,7 @@ export default () => {
                   const {
                     getCellProps,
                     row: { index },
+                    render,
                   } = cell;
                   return (
                     <td
@@ -347,7 +368,7 @@ export default () => {
                         setRowsHover([...rowsHover]);
                       }}
                     >
-                      {renderCell(cell)}
+                      {render("Cell")}
                     </td>
                   );
                 })}
