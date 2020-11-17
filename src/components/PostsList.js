@@ -3,19 +3,20 @@ import React, {
   useState,
   useEffect,
   useCallback,
-  useRef,
-  forwardRef,
   Fragment,
 } from "react";
 import { usePosts } from "../hooks/posts";
 import { Link, useLocation } from "react-router-dom";
 import { paramsToObject, toCapitalize } from "../common";
 import { useTable, useExpanded, useRowSelect } from "react-table";
-import { Table, Form, FormControl, Button } from "react-bootstrap";
+import { Table, Button } from "react-bootstrap";
 import { FaCommentAlt } from "react-icons/fa";
 import { POSTS, POST_EDIT } from "../routes";
 import { format } from "date-fns";
 import styled from "styled-components";
+import RowCheck from "./RowCheck";
+import QuickEditPost from "./QuickEditPost";
+import { useCategories } from "../hooks/categories";
 
 const PostsTable = styled(Table)`
   & tbody tr .row-actions {
@@ -39,6 +40,11 @@ export default () => {
     [search]
   );
   const { posts, getPosts } = usePosts();
+  const { getCatetories } = useCategories();
+
+  useEffect(() => {
+    getCatetories({ context: "edit", per_page: 100 });
+  }, []);
 
   useEffect(() => {
     getPosts(params);
@@ -164,19 +170,20 @@ export default () => {
           },
         }) => (
           <Fragment>
-            {tags.map(({ name, term_id }, index) => (
-              <Fragment key={index}>
-                <Link
-                  to={{
-                    pathname: POSTS,
-                    search: `?tags[]=${term_id}`,
-                  }}
-                >
-                  <small>{name}</small>
-                </Link>
-                {index !== tags.length - 1 && tags.length !== 1 && ", "}
-              </Fragment>
-            ))}
+            {tags &&
+              tags.map(({ name, term_id }, index) => (
+                <Fragment key={index}>
+                  <Link
+                    to={{
+                      pathname: POSTS,
+                      search: `?tags[]=${term_id}`,
+                    }}
+                  >
+                    <small>{name}</small>
+                  </Link>
+                  {index !== tags.length - 1 && tags.length !== 1 && ", "}
+                </Fragment>
+              ))}
           </Fragment>
         ),
       },
@@ -229,36 +236,14 @@ export default () => {
         {
           id: "selection",
           Header: ({ getToggleAllRowsSelectedProps }) => (
-            <CheckBox {...getToggleAllRowsSelectedProps()} />
+            <RowCheck {...getToggleAllRowsSelectedProps()} />
           ),
-          Cell: ({ row }) => <CheckBox {...row.getToggleRowSelectedProps()} />,
+          Cell: ({ row }) => <RowCheck {...row.getToggleRowSelectedProps()} />,
         },
         ...columns,
       ]);
     }
   );
-
-  const CheckBox = forwardRef(({ indeterminate, ...rest }, ref) => {
-    const defaultRef = useRef();
-    const resolvedRef = ref || defaultRef;
-    useEffect(() => {
-      resolvedRef.current.indeterminate = indeterminate;
-    }, [resolvedRef, indeterminate]);
-    return <Form.Check type="checkbox" ref={resolvedRef} {...rest} />;
-  });
-
-  const renderRowSub = useCallback(({ row, rowProps, visibleColumns }) => {
-    return (
-      <tr>
-        <td
-          colSpan={visibleColumns.length}
-          onClick={() => row.toggleRowExpanded()}
-        >
-          Loading...
-        </td>
-      </tr>
-    );
-  }, []);
 
   const renderRow = useCallback(
     ({ getRowProps, cells }) => (
@@ -289,9 +274,16 @@ export default () => {
             const rowProps = row.getRowProps();
             return (
               <Fragment key={rowProps.key}>
-                {row.isExpanded
-                  ? renderRowSub({ row, rowProps, visibleColumns })
-                  : renderRow(row)}
+                {row.isExpanded ? (
+                  <QuickEditPost
+                    row={row}
+                    rowProps={rowProps}
+                    visibleColumns={visibleColumns}
+                    onCancel={(e) => row.toggleRowExpanded()}
+                  />
+                ) : (
+                  renderRow(row)
+                )}
               </Fragment>
             );
           })}

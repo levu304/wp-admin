@@ -44,3 +44,18 @@ export const useSettings = () => {
 
   return { languages };
 };
+
+export const useClickOutside = (ref, callback) => {
+  useEffect(() => {
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [ref]);
+
+  const handleClickOutside = (event) => {
+    if (ref.current && !ref.current.contains(event.target)) {
+      callback(event);
+    }
+  };
+};
