@@ -69,10 +69,7 @@ export default memo(() => {
   return (
     <Sidebar activeKey={pathname} className="flex-column">
       <hr />
-      {pathname === POSTS ||
-      pathname === POST_NEW ||
-      pathname === CATEGORIES ||
-      pathname === TAGS ? (
+      {[POSTS, POST_NEW, CATEGORIES, TAGS].includes(pathname) ? (
         <Nav.Item>
           <NavLink
             to={POSTS}
@@ -186,7 +183,7 @@ export default memo(() => {
         </NavDropdown>
       )}
 
-      {pathname === MEDIA || pathname === MEDIA_NEW ? (
+      {[MEDIA, MEDIA_NEW].includes(pathname) ? (
         <Nav.Item>
           <NavLink
             to={MEDIA}
@@ -257,7 +254,7 @@ export default memo(() => {
         </NavDropdown>
       )}
 
-      {pathname === PAGES || pathname === PAGE_NEW ? (
+      {[PAGES, PAGE_NEW].includes(pathname) ? (
         <Nav.Item>
           <NavLink
             to={PAGES}
@@ -357,11 +354,9 @@ export default memo(() => {
             Profile
           </NavLink>
         </Nav.Item>
-      ) : pathname === USERS ||
-        pathname === USER_NEW ||
-        pathname === PROFILE ||
-        pathname === USER_DELETE ||
-        pathname === USER_EDIT ? (
+      ) : [USERS, USER_NEW, PROFILE, USER_DELETE, USER_EDIT].includes(
+          pathname
+        ) ? (
         <Nav.Item>
           <NavLink
             to={USERS}

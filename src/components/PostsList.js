@@ -39,11 +39,13 @@ export default () => {
         : { ...defaultParams, offset },
     [search]
   );
-  const { posts, getPosts } = usePosts();
+  const { posts, getPosts, getAuthors, getPostStatuses } = usePosts();
   const { getCatetories } = useCategories();
 
   useEffect(() => {
     getCatetories({ context: "edit", per_page: 100 });
+    getAuthors();
+    getPostStatuses();
   }, []);
 
   useEffect(() => {

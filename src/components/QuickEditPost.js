@@ -1,27 +1,101 @@
-import React, { memo, useState, useMemo, useRef } from "react";
-import { Button, Row, Col, Form, FormCheck } from "react-bootstrap";
+import React, { memo, useRef, useEffect } from "react";
+import { Button, Row, Col, Form } from "react-bootstrap";
 import { useClickOutside } from "../hooks/settings";
 import CategoriesListSelector from "./CategoriesListSelector";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  setQuickEditInitState,
+  setQuickEditCommentStatus,
+  setQuickEditPassword,
+  setQuickEditPingStatus,
+  setQuickEditSlug,
+  setQuickEditStatus,
+  setQuickEditTags,
+  setQuickEditTitle,
+  setQuickEditAuthor,
+  setQuickEditDate,
+  setQuickEditSticky,
+} from "../redux/actions/quick-edit-post";
+import DatePicker from "react-datepicker";
+import { usePosts } from "../hooks/posts";
 
 export default memo(
   ({ row: { original }, rowProps, visibleColumns, onCancel }) => {
-    // console.log(original);
     const wrapperRef = useRef(null);
     useClickOutside(wrapperRef, onCancel);
+    const dispatch = useDispatch();
+    const {
+      id,
+      title,
+      slug,
+      password,
+      status,
+      comment_status,
+      ping_status,
+      tags,
+      author,
+      date,
+      sticky,
+    } = useSelector((state) => state.quickEditPost);
+    const { authors, statuses, updated, updatePost, toggleUpdate } = usePosts();
 
-    const [title, setTitle] = useState(original.title);
-    const [slug, setSlug] = useState(original.slug);
-    const [password, setPassword] = useState(original.password);
-    const [status, setStatus] = useState(original.status);
-    const [comment_status, setCommentStatus] = useState(
-      original.comment_status
-    );
-    const [ping_status, setPingStatus] = useState(original.ping_status);
-    const tagsList = useMemo(
-      () => original.tags.map(({ name }) => name).join(", "),
-      [original.tags]
-    );
-    const [tags, setTags] = useState(tagsList);
+    useEffect(() => {
+      if (updated) {
+        toggleUpdate();
+        onCancel();
+      }
+    }, [updated]);
+
+    useEffect(() => {
+      const {
+        id,
+        title,
+        slug,
+        password,
+        status,
+        comment_status,
+        ping_status,
+        tags,
+        author,
+        date,
+        sticky,
+      } = original;
+      dispatch(
+        setQuickEditInitState({
+          id,
+          title,
+          slug,
+          password,
+          status,
+          comment_status,
+          ping_status,
+          tags: tags.map(({ name }) => name).join(", "),
+          author: author.id,
+          date: new Date(date),
+          sticky,
+        })
+      );
+    }, [original]);
+
+    const update = (e) => {
+      e.preventDefault();
+      if (!id) {
+        return;
+      }
+      updatePost({
+        id,
+        title,
+        slug,
+        password,
+        status,
+        comment_status,
+        ping_status,
+        tags,
+        author,
+        date,
+        sticky,
+      });
+    };
 
     return (
       <tr {...rowProps} ref={wrapperRef}>
@@ -37,7 +111,9 @@ export default memo(
                   <Form.Control
                     type="text"
                     value={title}
-                    onChange={(e) => setTitle(e.target.value)}
+                    onChange={(e) =>
+                      dispatch(setQuickEditTitle(e.target.value))
+                    }
                     size="sm"
                   />
                 </Col>
@@ -50,9 +126,45 @@ export default memo(
                   <Form.Control
                     type="text"
                     value={slug}
-                    onChange={(e) => setSlug(e.target.value)}
+                    onChange={(e) => dispatch(setQuickEditSlug(e.target.value))}
                     size="sm"
                   />
+                </Col>
+              </Form.Group>
+              <Form.Group as={Row} className="align-items-center mb-0">
+                <Form.Label column sm="2">
+                  <small className="font-italic">Date</small>
+                </Form.Label>
+                <Col sm="10">
+                  <DatePicker
+                    className="form-control form-control-sm"
+                    selected={date}
+                    showTimeSelect
+                    onChange={(date) => dispatch(setQuickEditDate(date))}
+                    dateFormat="yyyy/MM/dd hh:mm"
+                  />
+                </Col>
+              </Form.Group>
+              <Form.Group as={Row} className="align-items-center mb-0">
+                <Form.Label column sm="2">
+                  <small className="font-italic">Author</small>
+                </Form.Label>
+                <Col sm="5">
+                  <Form.Control
+                    as="select"
+                    size="sm"
+                    custom
+                    value={author}
+                    onChange={(e) =>
+                      dispatch(setQuickEditAuthor(e.target.value))
+                    }
+                  >
+                    {authors.map(({ name, id }, index) => (
+                      <option key={index} value={id}>
+                        {name}
+                      </option>
+                    ))}
+                  </Form.Control>
                 </Col>
               </Form.Group>
 
@@ -60,33 +172,38 @@ export default memo(
                 <Form.Label column sm="2">
                   <small className="font-italic">Password</small>
                 </Form.Label>
-                <Col sm="7">
+                <Col sm="5">
                   <Form.Control
                     type="text"
                     value={password}
-                    onChange={(e) => setPassword(e.target.value)}
+                    onChange={(e) =>
+                      dispatch(setQuickEditPassword(e.target.value))
+                    }
                     size="sm"
+                    disabled={status === "private"}
                   />
                 </Col>
                 <Col sm="3" className="px-0 d-flex align-items-center">
                   <em>
                     <small>{"–OR–"} </small>
                   </em>
-                  <Form.Check inline className="mr-0 ml-2">
-                    <input
-                      type="checkbox"
-                      value="private"
-                      checked={status === "private"}
-                      onChange={(e) =>
-                        setStatus(
-                          status !== "private" ? "publish" : e.target.value
+                  <Form.Check
+                    inline
+                    className="mr-0 ml-2"
+                    checked={status === "private"}
+                    value="private"
+                    onChange={(e) => {
+                      dispatch(
+                        setQuickEditStatus(
+                          status === e.target.value ? "publish" : e.target.value
                         )
+                      );
+                      if (status !== e.target.value) {
+                        dispatch(setQuickEditPassword(""));
                       }
-                    />
-                    <Form.Label className="mb-0 ml-1">
-                      <small className="font-italic">Private</small>
-                    </Form.Label>
-                  </Form.Check>
+                    }}
+                    label={<small>Private</small>}
+                  />
                 </Col>
               </Form.Group>
             </Col>
@@ -96,7 +213,7 @@ export default memo(
                 <Form.Label>
                   <small className="font-italic">Categories</small>
                 </Form.Label>
-                <CategoriesListSelector />
+                <CategoriesListSelector checks={original.categories} />
               </Form.Group>
             </Col>
 
@@ -110,40 +227,80 @@ export default memo(
                   size="sm"
                   rows={2}
                   value={tags}
-                  onChange={(e) => setTags(e.target.value)}
+                  onChange={(e) => dispatch(setQuickEditTags(e.target.value))}
                 />
               </Form.Group>
               <Form.Group>
-                <FormCheck inline>
-                  <FormCheck.Input
-                    type="checkbox"
-                    value="open"
-                    checked={comment_status === "open"}
-                    onChange={(e) =>
-                      setCommentStatus(
-                        comment_status === "open" ? "closed" : e.target.value
+                <Form.Check
+                  inline
+                  label={<small className="font-italic">Allow Comments</small>}
+                  value="open"
+                  checked={comment_status === "open"}
+                  onChange={(e) =>
+                    dispatch(
+                      setQuickEditCommentStatus(
+                        comment_status === e.target.value
+                          ? "closed"
+                          : e.target.value
                       )
+                    )
+                  }
+                />
+                <Form.Check
+                  inline
+                  label={<small className="font-italic">Allow Pings</small>}
+                  value="open"
+                  checked={ping_status === "open"}
+                  onChange={(e) =>
+                    dispatch(
+                      setQuickEditPingStatus(
+                        ping_status === e.target.value
+                          ? "closed"
+                          : e.target.value
+                      )
+                    )
+                  }
+                />
+              </Form.Group>
+              <Form.Group as={Row} className="align-items-center mb-0">
+                <Form.Label column sm="1">
+                  <small className="font-italic">Status</small>
+                </Form.Label>
+                <Col sm="4">
+                  <Form.Control
+                    as="select"
+                    size="sm"
+                    custom
+                    value={status}
+                    onChange={(e) =>
+                      status !== "private"
+                        ? dispatch(setQuickEditStatus(e.target.value))
+                        : dispatch(setQuickEditStatus("private"))
+                    }
+                  >
+                    {statuses
+                      .filter(({ key }) => key !== "private")
+                      .map(({ key, name }) => (
+                        <option key={key} value={key}>
+                          {name}
+                        </option>
+                      ))}
+                  </Form.Control>
+                </Col>
+                <Col sm="4">
+                  <Form.Check
+                    inline
+                    label={
+                      <small className="font-italic">
+                        Make this post sticky
+                      </small>
+                    }
+                    checked={sticky}
+                    onChange={(e) =>
+                      dispatch(setQuickEditSticky(e.target.checked))
                     }
                   />
-                  <FormCheck.Label>
-                    <small className="font-italic">Allow Comments</small>
-                  </FormCheck.Label>
-                </FormCheck>
-                <FormCheck inline>
-                  <FormCheck.Input
-                    type="checkbox"
-                    value="open"
-                    checked={ping_status === "open"}
-                    onChange={(e) =>
-                      setPingStatus(
-                        ping_status === "open" ? "closed" : e.target.value
-                      )
-                    }
-                  />
-                  <FormCheck.Label>
-                    <small className="font-italic">Allow Pings</small>
-                  </FormCheck.Label>
-                </FormCheck>
+                </Col>
               </Form.Group>
             </Col>
           </Row>
@@ -152,7 +309,7 @@ export default memo(
             <Button variant="outline-primary" size="sm" onClick={onCancel}>
               Cancel
             </Button>
-            <Button variant="primary" size="sm">
+            <Button variant="primary" size="sm" onClick={update}>
               Update
             </Button>
           </div>
