@@ -276,7 +276,10 @@ export default () => {
                     row={row}
                     rowProps={rowProps}
                     visibleColumns={visibleColumns}
-                    onCancel={(e) => row.toggleRowExpanded()}
+                    onCancel={(e) => {
+                      row.toggleRowExpanded();
+                      getPosts(params);
+                    }}
                   />
                 ) : (
                   renderRow(row)

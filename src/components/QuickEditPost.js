@@ -5,13 +5,15 @@ import React, {
   useState,
   useMemo,
   useCallback,
+  Fragment,
 } from "react";
-import { Button, Row, Col, Form } from "react-bootstrap";
+import { Button, Row, Col, Form, Spinner } from "react-bootstrap";
 import { useClickOutside } from "../hooks/settings";
 import CategoriesListSelector from "./CategoriesListSelector";
 import DatePicker from "react-datepicker";
 import { usePosts } from "../hooks/posts";
 import { useCategories } from "../hooks/categories";
+import { formatRFC3339 } from "date-fns";
 
 export default memo(
   ({ row: { original }, rowProps, visibleColumns, onCancel }) => {
@@ -39,6 +41,8 @@ export default memo(
     const { categories: categoriesList } = useCategories();
     const [categories, setCategories] = useState([]);
 
+    const [submit, setSubmit] = useState(false);
+
     useEffect(() => {
       const result = [];
       categoriesList.forEach((cat) => {
@@ -55,13 +59,17 @@ export default memo(
       setCategories([...result]);
     }, [original.categories, categoriesList]);
 
-    const onCategoriesChange = useCallback((index, value) => {
-      categories[index] = value;
-      setCategories([...categories]);
-    }, []);
+    const onCategoriesChange = useCallback(
+      (index, value) => {
+        categories[index] = value;
+        setCategories([...categories]);
+      },
+      [categories]
+    );
 
     useEffect(() => {
       if (updated) {
+        setSubmit(false);
         toggleUpdate();
         onCancel();
       }
@@ -72,6 +80,7 @@ export default memo(
       if (!id) {
         return;
       }
+      setSubmit(true);
       updatePost({
         id,
         title,
@@ -80,10 +89,13 @@ export default memo(
         status,
         comment_status,
         ping_status,
-        tags,
+        tags: tags.replace(" ", "").split(","),
+        categories: categoriesList
+          .filter((cat, index) => categories[index])
+          .map(({ name }) => name),
         author,
-        date,
-        sticky,
+        date: formatRFC3339(date),
+        sticky: password !== "" ? null : sticky,
       });
     };
 
@@ -288,8 +300,26 @@ export default memo(
             <Button variant="outline-primary" size="sm" onClick={onCancel}>
               Cancel
             </Button>
-            <Button variant="primary" size="sm" onClick={update}>
-              Update
+            <Button
+              variant="primary"
+              disabled={submit}
+              size="sm"
+              onClick={update}
+            >
+              {submit ? (
+                <Fragment>
+                  <Spinner
+                    as="span"
+                    animation="border"
+                    size="sm"
+                    role="status"
+                    aria-hidden="true"
+                  />
+                  Update
+                </Fragment>
+              ) : (
+                "Update"
+              )}
             </Button>
           </div>
         </td>

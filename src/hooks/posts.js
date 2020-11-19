@@ -108,6 +108,7 @@ export const usePosts = () => {
       params,
     })
       .then((response) => {
+        console.log(response.data);
         const { status } = response;
         if (status === 200) {
           setUpdated(true);
