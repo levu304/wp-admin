@@ -5,7 +5,6 @@ import role from "./role";
 import category from "./category";
 import author from "./author";
 import post from "./post";
-import quickEditPost from "./quick-edit-post";
 
 export default combineReducers({
   settings,
@@ -14,5 +13,4 @@ export default combineReducers({
   user,
   author,
   post,
-  quickEditPost,
 });

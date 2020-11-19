@@ -1,43 +1,64 @@
-import React, { memo, useRef, useEffect } from "react";
+import React, {
+  memo,
+  useRef,
+  useEffect,
+  useState,
+  useMemo,
+  useCallback,
+} from "react";
 import { Button, Row, Col, Form } from "react-bootstrap";
 import { useClickOutside } from "../hooks/settings";
 import CategoriesListSelector from "./CategoriesListSelector";
-import { useDispatch, useSelector } from "react-redux";
-import {
-  setQuickEditInitState,
-  setQuickEditCommentStatus,
-  setQuickEditPassword,
-  setQuickEditPingStatus,
-  setQuickEditSlug,
-  setQuickEditStatus,
-  setQuickEditTags,
-  setQuickEditTitle,
-  setQuickEditAuthor,
-  setQuickEditDate,
-  setQuickEditSticky,
-} from "../redux/actions/quick-edit-post";
 import DatePicker from "react-datepicker";
 import { usePosts } from "../hooks/posts";
+import { useCategories } from "../hooks/categories";
 
 export default memo(
   ({ row: { original }, rowProps, visibleColumns, onCancel }) => {
     const wrapperRef = useRef(null);
     useClickOutside(wrapperRef, onCancel);
-    const dispatch = useDispatch();
-    const {
-      id,
-      title,
-      slug,
-      password,
-      status,
-      comment_status,
-      ping_status,
-      tags,
-      author,
-      date,
-      sticky,
-    } = useSelector((state) => state.quickEditPost);
+
     const { authors, statuses, updated, updatePost, toggleUpdate } = usePosts();
+
+    const id = useMemo(() => original.id, [original]);
+    const [title, setTitle] = useState(original.title);
+    const [slug, setSlug] = useState(original.slug);
+    const [password, setPassword] = useState(original.password);
+    const [status, setStatus] = useState(original.status);
+    const [comment_status, setCommentStatus] = useState(
+      original.comment_status
+    );
+    const [ping_status, setPingStatus] = useState(original.ping_status);
+    const [tags, setTags] = useState(
+      original.tags.map(({ name }) => name).join(", ")
+    );
+    const [author, setAuthor] = useState(original.author.id);
+    const [date, setDate] = useState(new Date(original.date));
+    const [sticky, setSticky] = useState(original.sticky);
+
+    const { categories: categoriesList } = useCategories();
+    const [categories, setCategories] = useState([]);
+
+    useEffect(() => {
+      const result = [];
+      categoriesList.forEach((cat) => {
+        if (
+          original.categories.length !== 0 &&
+          typeof original.categories.find((ele) => ele.name === cat.name) !==
+            "undefined"
+        ) {
+          result.push(true);
+        } else {
+          result.push(false);
+        }
+      });
+      setCategories([...result]);
+    }, [original.categories, categoriesList]);
+
+    const onCategoriesChange = useCallback((index, value) => {
+      categories[index] = value;
+      setCategories([...categories]);
+    }, []);
 
     useEffect(() => {
       if (updated) {
@@ -45,37 +66,6 @@ export default memo(
         onCancel();
       }
     }, [updated]);
-
-    useEffect(() => {
-      const {
-        id,
-        title,
-        slug,
-        password,
-        status,
-        comment_status,
-        ping_status,
-        tags,
-        author,
-        date,
-        sticky,
-      } = original;
-      dispatch(
-        setQuickEditInitState({
-          id,
-          title,
-          slug,
-          password,
-          status,
-          comment_status,
-          ping_status,
-          tags: tags.map(({ name }) => name).join(", "),
-          author: author.id,
-          date: new Date(date),
-          sticky,
-        })
-      );
-    }, [original]);
 
     const update = (e) => {
       e.preventDefault();
@@ -111,9 +101,7 @@ export default memo(
                   <Form.Control
                     type="text"
                     value={title}
-                    onChange={(e) =>
-                      dispatch(setQuickEditTitle(e.target.value))
-                    }
+                    onChange={(e) => setTitle(e.target.value)}
                     size="sm"
                   />
                 </Col>
@@ -126,7 +114,7 @@ export default memo(
                   <Form.Control
                     type="text"
                     value={slug}
-                    onChange={(e) => dispatch(setQuickEditSlug(e.target.value))}
+                    onChange={(e) => setSlug(e.target.value)}
                     size="sm"
                   />
                 </Col>
@@ -140,8 +128,10 @@ export default memo(
                     className="form-control form-control-sm"
                     selected={date}
                     showTimeSelect
-                    onChange={(date) => dispatch(setQuickEditDate(date))}
-                    dateFormat="yyyy/MM/dd hh:mm"
+                    onChange={(date) => setDate(date)}
+                    dateFormat="yyyy/MM/dd HH:mm"
+                    timeFormat="HH:mm"
+                    timeIntervals={1}
                   />
                 </Col>
               </Form.Group>
@@ -155,9 +145,7 @@ export default memo(
                     size="sm"
                     custom
                     value={author}
-                    onChange={(e) =>
-                      dispatch(setQuickEditAuthor(e.target.value))
-                    }
+                    onChange={(e) => setAuthor(e.target.value)}
                   >
                     {authors.map(({ name, id }, index) => (
                       <option key={index} value={id}>
@@ -176,9 +164,7 @@ export default memo(
                   <Form.Control
                     type="text"
                     value={password}
-                    onChange={(e) =>
-                      dispatch(setQuickEditPassword(e.target.value))
-                    }
+                    onChange={(e) => setPassword(e.target.value)}
                     size="sm"
                     disabled={status === "private"}
                   />
@@ -193,13 +179,11 @@ export default memo(
                     checked={status === "private"}
                     value="private"
                     onChange={(e) => {
-                      dispatch(
-                        setQuickEditStatus(
-                          status === e.target.value ? "publish" : e.target.value
-                        )
+                      setStatus(
+                        status === e.target.value ? "publish" : e.target.value
                       );
                       if (status !== e.target.value) {
-                        dispatch(setQuickEditPassword(""));
+                        setPassword("");
                       }
                     }}
                     label={<small>Private</small>}
@@ -213,7 +197,10 @@ export default memo(
                 <Form.Label>
                   <small className="font-italic">Categories</small>
                 </Form.Label>
-                <CategoriesListSelector checks={original.categories} />
+                <CategoriesListSelector
+                  data={categories}
+                  onChange={onCategoriesChange}
+                />
               </Form.Group>
             </Col>
 
@@ -227,7 +214,7 @@ export default memo(
                   size="sm"
                   rows={2}
                   value={tags}
-                  onChange={(e) => dispatch(setQuickEditTags(e.target.value))}
+                  onChange={(e) => setTags(e.target.value)}
                 />
               </Form.Group>
               <Form.Group>
@@ -237,12 +224,10 @@ export default memo(
                   value="open"
                   checked={comment_status === "open"}
                   onChange={(e) =>
-                    dispatch(
-                      setQuickEditCommentStatus(
-                        comment_status === e.target.value
-                          ? "closed"
-                          : e.target.value
-                      )
+                    setCommentStatus(
+                      comment_status === e.target.value
+                        ? "closed"
+                        : e.target.value
                     )
                   }
                 />
@@ -252,12 +237,8 @@ export default memo(
                   value="open"
                   checked={ping_status === "open"}
                   onChange={(e) =>
-                    dispatch(
-                      setQuickEditPingStatus(
-                        ping_status === e.target.value
-                          ? "closed"
-                          : e.target.value
-                      )
+                    setPingStatus(
+                      ping_status === e.target.value ? "closed" : e.target.value
                     )
                   }
                 />
@@ -274,8 +255,8 @@ export default memo(
                     value={status}
                     onChange={(e) =>
                       status !== "private"
-                        ? dispatch(setQuickEditStatus(e.target.value))
-                        : dispatch(setQuickEditStatus("private"))
+                        ? setStatus(e.target.value)
+                        : setStatus("private")
                     }
                   >
                     {statuses
@@ -296,9 +277,7 @@ export default memo(
                       </small>
                     }
                     checked={sticky}
-                    onChange={(e) =>
-                      dispatch(setQuickEditSticky(e.target.checked))
-                    }
+                    onChange={(e) => setSticky(e.target.checked)}
                   />
                 </Col>
               </Form.Group>

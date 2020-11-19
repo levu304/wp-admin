@@ -17,6 +17,7 @@ import styled from "styled-components";
 import RowCheck from "./RowCheck";
 import QuickEditPost from "./QuickEditPost";
 import { useCategories } from "../hooks/categories";
+import CommentBadge from "./CommentBadge";
 
 const PostsTable = styled(Table)`
   & tbody tr .row-actions {
@@ -91,27 +92,15 @@ export default () => {
               <span className="mx-2">{`|`}</span>
               <Button
                 variant="link"
-                className="px-0"
+                className="p-0"
                 {...getToggleRowExpandedProps()}
               >
                 <small>Quick Edit</small>
               </Button>
               <span className="mx-2">{`|`}</span>
-              <Button variant="link" className="text-danger px-0">
+              <Button variant="link" className="text-danger p-0">
                 <small>Trash</small>
               </Button>
-              {/* <span className="mx-2">{`|`}</span>
-                <Link
-                  to={{
-                    pathname: USER_DELETE,
-                    state: {
-                      user: users[index],
-                    },
-                  }}
-                  className="text-danger"
-                >
-                  <small>Delete</small>
-                </Link> */}
             </div>
           </Fragment>
         ),
@@ -192,10 +181,16 @@ export default () => {
       {
         Header: () => <FaCommentAlt />,
         id: "comments",
-        Cell: ({ row }) => {
-          // console.log(row);
-          return null;
-        },
+        Cell: ({
+          row: {
+            original: { comments },
+          },
+        }) =>
+          comments.length !== 0 ? (
+            <CommentBadge>{comments.length}</CommentBadge>
+          ) : (
+            <span aria-hidden="true">—</span>
+          ),
       },
       {
         Header: "Date",
@@ -260,7 +255,7 @@ export default () => {
 
   return (
     <Fragment>
-      <PostsTable striped bordered {...getTableProps()}>
+      <PostsTable striped bordered borderless {...getTableProps()}>
         <thead>
           {headerGroups.map(({ getHeaderGroupProps, headers }) => (
             <tr {...getHeaderGroupProps()}>
