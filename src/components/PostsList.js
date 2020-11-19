@@ -9,7 +9,7 @@ import { usePosts } from "../hooks/posts";
 import { Link, useLocation } from "react-router-dom";
 import { paramsToObject, toCapitalize } from "../common";
 import { useTable, useExpanded, useRowSelect } from "react-table";
-import { Table, Button } from "react-bootstrap";
+import { Table, Button, Form, FormControl } from "react-bootstrap";
 import { FaCommentAlt } from "react-icons/fa";
 import { POSTS, POST_EDIT } from "../routes";
 import { format } from "date-fns";
@@ -18,6 +18,7 @@ import RowCheck from "./RowCheck";
 import QuickEditPost from "./QuickEditPost";
 import { useCategories } from "../hooks/categories";
 import CommentBadge from "./CommentBadge";
+import { load } from "react-cookies";
 
 const PostsTable = styled(Table)`
   & tbody tr .row-actions {
@@ -32,6 +33,7 @@ export default () => {
   const { search } = useLocation();
   const defaultParams = { context: "edit", post_type: "post" };
   const [offset, setOffset] = useState(1);
+  const user = load("user");
 
   const params = useMemo(
     () =>
@@ -255,6 +257,49 @@ export default () => {
 
   return (
     <Fragment>
+      <div className="my-2 d-flex flex-row align-items-center justify-content-between">
+        <div>
+          <Link to={POSTS}>
+            <small>All</small>
+          </Link>
+          <span className="mx-2">{" | "}</span>
+          <Link to={POSTS + `?author[]=${user.id}`}>
+            <small>Mine</small>
+          </Link>
+          <span className="mx-2">{" | "}</span>
+          <Link to={POSTS + `?status[]=publish`}>
+            <small>Published</small>
+          </Link>
+          <span className="mx-2">{" | "}</span>
+          <Link to={POSTS + `?sticky=true`}>
+            <small>Sticky</small>
+          </Link>
+          <span className="mx-2">{" | "}</span>
+          <Link to={POSTS + `?status[]=private`}>
+            <small>Private</small>
+          </Link>
+        </div>
+        <div>
+          <Form inline>
+            <FormControl
+              type="text"
+              placeholder="Search"
+              className="mr-sm-1"
+              size="sm"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+            />
+            <Button
+              as={Link}
+              to={query === "" ? POSTS : POSTS + `?search=${query}`}
+              variant="outline-primary"
+              size="sm"
+            >
+              Search Posts
+            </Button>
+          </Form>
+        </div>
+      </div>
       <PostsTable striped bordered borderless {...getTableProps()}>
         <thead>
           {headerGroups.map(({ getHeaderGroupProps, headers }) => (
