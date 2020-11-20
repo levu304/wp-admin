@@ -106,7 +106,7 @@ export default () => {
             </Col>
           </Form.Group>
 
-          {user.roles[0] === "administrator" && (
+          {role === "administrator" && (
             <Form.Group as={Row} className="align-items-center">
               <Form.Label column lg="3">
                 <small className="font-weight-bold">Role</small>

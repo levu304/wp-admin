@@ -1,13 +1,24 @@
 import React, { useMemo, useState, useEffect, Fragment } from "react";
 import { Table, Form, FormControl, Button } from "react-bootstrap";
 import { Link, useLocation, useHistory } from "react-router-dom";
-import { useTable } from "react-table";
+import { useTable, useRowSelect } from "react-table";
 import { useUsers } from "../hooks/users";
 import { POSTS, USERS, USER_DELETE, USER_EDIT } from "../routes";
 import { paramsToObject } from "../common";
 import UsersListSub from "./UsersListSub";
+import RowCheck from "./RowCheck";
 import { useRoles } from "../hooks/roles";
 import cookie from "react-cookies";
+import styled from "styled-components";
+
+const UsersTable = styled(Table)`
+  & tbody tr .row-actions {
+    display: none;
+  }
+  & tbody tr:hover .row-actions {
+    display: flex;
+  }
+`;
 
 export default () => {
   const currentUser = cookie.load("user");
@@ -44,120 +55,48 @@ export default () => {
   }, [params]);
 
   const [query, setQuery] = useState("");
-  const [checkAll, setCheckAll] = useState(false);
-  const [checkRows, setCheckRows] = useState([]);
-  const [rowsHover, setRowsHover] = useState([]);
   const [newRole, setNewRole] = useState("");
   const [action, setAction] = useState("");
-
-  const data = useMemo(
-    () =>
-      users.map(({ id, username, name, email, roles, posts }) => {
-        const rows = [];
-        const hovers = [];
-        rows.push(false);
-        setCheckRows([...rows]);
-        hovers.push(false);
-        setRowsHover([...hovers]);
-        return {
-          id,
-          username,
-          name,
-          email,
-          role: roles[0],
-          posts,
-        };
-      }),
-    [users]
-  );
-
-  useEffect(() => {
-    if (checkAll) {
-      const all = checkRows.map((value) => true);
-      setCheckRows([...all]);
-      return;
-    }
-
-    const filter = checkRows.filter((value) => value === false);
-
-    if (filter.length !== 0) {
-      return;
-    }
-
-    const all = checkRows.map((value) => false);
-    setCheckRows([...all]);
-  }, [checkAll]);
 
   const columns = useMemo(
     () => [
       {
-        Header: () => (
-          <Form.Check
-            type="checkbox"
-            checked={checkAll}
-            onChange={(e) => {
-              setCheckAll(e.target.checked);
-            }}
-          />
-        ),
-        id: "checkbox",
-        Cell: ({ row: { index } }) => (
-          <Form.Check
-            type="checkbox"
-            checked={checkRows[index]}
-            onChange={(e) => {
-              checkRows[index] = e.target.checked;
-              setCheckRows([...checkRows]);
-              setCheckAll(false);
-            }}
-          />
-        ),
-      },
-      {
         Header: "Username",
         accessor: "username",
-        Cell: ({
-          row: {
-            index,
-            original: { username, id },
-          },
-        }) =>
-          rowsHover[index] ? (
-            <Fragment>
-              <p className="mb-0">{username}</p>
-              <div className="d-flex flex-row align-items-center">
-                <Link
-                  to={{
-                    pathname: USER_EDIT,
-                    state: {
-                      user: users[index],
-                    },
-                  }}
-                >
-                  <small>Edit</small>
-                </Link>
-                {currentUser.ID !== id && (
-                  <Fragment>
-                    <span className="mx-2">{`|`}</span>
-                    <Link
-                      to={{
-                        pathname: USER_DELETE,
-                        state: {
-                          user: users[index],
-                        },
-                      }}
-                      className="text-danger"
-                    >
-                      <small>Delete</small>
-                    </Link>
-                  </Fragment>
-                )}
-                {/* <Link>View</Link> */}
-              </div>
-            </Fragment>
-          ) : (
-            <small>{username}</small>
-          ),
+        Cell: ({ row: { original } }) => (
+          <Fragment>
+            <p className="mb-0">{original.username}</p>
+            <div className="row-actions flex-row align-items-center">
+              <Link
+                to={{
+                  pathname: USER_EDIT,
+                  state: {
+                    user: original,
+                  },
+                }}
+              >
+                <small>Edit</small>
+              </Link>
+              {currentUser.id !== original.id && (
+                <Fragment>
+                  <span className="mx-2">{`|`}</span>
+                  <Link
+                    to={{
+                      pathname: USER_DELETE,
+                      state: {
+                        user: original,
+                      },
+                    }}
+                    className="text-danger"
+                  >
+                    <small>Delete</small>
+                  </Link>
+                </Fragment>
+              )}
+              {/* <Link>View</Link> */}
+            </div>
+          </Fragment>
+        ),
       },
       {
         Header: "Name",
@@ -186,11 +125,11 @@ export default () => {
         accessor: "role",
         Cell: ({
           row: {
-            original: { role },
+            original: { roles },
           },
         }) => (
           <p className="mb-0 text-capitalize">
-            <small>{role}</small>
+            <small>{roles[0]}</small>
           </p>
         ),
       },
@@ -208,25 +147,42 @@ export default () => {
         ),
       },
     ],
-    [checkRows, rowsHover, checkAll]
+    []
   );
 
-  const { getTableProps, headerGroups, rows, prepareRow } = useTable({
-    columns,
-    data,
-  });
+  const {
+    getTableProps,
+    getTableBodyProps,
+    headerGroups,
+    rows,
+    prepareRow,
+    visibleColumns,
+    selectedFlatRows,
+  } = useTable(
+    {
+      columns,
+      data: users,
+    },
+    useRowSelect,
+    (hooks) => {
+      hooks.visibleColumns.push((columns) => [
+        {
+          id: "selection",
+          Header: ({ getToggleAllRowsSelectedProps }) => (
+            <RowCheck {...getToggleAllRowsSelectedProps()} />
+          ),
+          Cell: ({ row }) => <RowCheck {...row.getToggleRowSelectedProps()} />,
+        },
+        ...columns,
+      ]);
+    }
+  );
 
   const applyAction = (e) => {
     e.preventDefault();
-    const user = data.find((value, index) => checkRows[index] === true);
-    if (typeof user === "undefined") {
-      return;
-    }
+
     switch (action) {
       case "delete":
-        push(USER_DELETE, {
-          user,
-        });
         break;
 
       default:
@@ -239,22 +195,19 @@ export default () => {
     if (newRole === "") {
       return;
     }
-    const user = data.find((value, index) => checkRows[index] === true);
-    if (typeof user === "undefined") {
-      return;
-    }
-    updateUser({
-      id: user.id,
-      first_name: user.first_name,
-      last_name: user.last_name,
-      nickname: user.nickname,
-      name: user.display_name,
-      email: user.email,
-      url: user.url,
-      description: user.description,
-      roles: [newRole],
-      locale: [user.locale],
-    });
+
+    // updateUser({
+    //   id: user.id,
+    //   first_name: user.first_name,
+    //   last_name: user.last_name,
+    //   nickname: user.nickname,
+    //   name: user.display_name,
+    //   email: user.email,
+    //   url: user.url,
+    //   description: user.description,
+    //   roles: [newRole],
+    //   locale: [user.locale],
+    // });
   };
 
   return (
@@ -274,7 +227,10 @@ export default () => {
             />
             <Button
               as={Link}
-              to={query === "" ? USERS : USERS + `?search=${query}`}
+              to={{
+                pathname: USERS,
+                search: `search=${query}`,
+              }}
               variant="outline-primary"
               size="sm"
             >
@@ -317,13 +273,7 @@ export default () => {
                 </option>
               ))}
             </Form.Control>
-            <Button
-              // as={Link}
-              // to={query === "" ? USERS : USERS + `?search=${query}`}
-              variant="outline-primary"
-              size="sm"
-              onClick={changeRole}
-            >
+            <Button variant="outline-primary" size="sm" onClick={changeRole}>
               Change
             </Button>
           </Form>
@@ -331,11 +281,11 @@ export default () => {
 
         <div>
           <p className="mb-0">
-            <small>{`${data.length} items`}</small>
+            <small>{`${users.length} items`}</small>
           </p>
         </div>
       </div>
-      <Table striped bordered {...getTableProps()}>
+      <UsersTable hover bordered borderless {...getTableProps()}>
         <thead>
           {headerGroups.map((headerGroup) => (
             <tr {...headerGroup.getHeaderGroupProps()}>
@@ -345,38 +295,29 @@ export default () => {
             </tr>
           ))}
         </thead>
-        <tbody>
+        <tbody {...getTableBodyProps()}>
+          {rows.length === 0 && (
+            <tr>
+              <td colSpan={visibleColumns.length} className="text-center">
+                <small>No users found.</small>
+              </td>
+            </tr>
+          )}
           {rows.map((row, i) => {
             prepareRow(row);
+            const rowProps = row.getRowProps();
             return (
-              <tr {...row.getRowProps()}>
-                {row.cells.map((cell) => {
-                  const {
-                    getCellProps,
-                    row: { index },
-                    render,
-                  } = cell;
-                  return (
-                    <td
-                      {...getCellProps()}
-                      onMouseEnter={() => {
-                        rowsHover[index] = true;
-                        setRowsHover([...rowsHover]);
-                      }}
-                      onMouseLeave={() => {
-                        rowsHover[index] = false;
-                        setRowsHover([...rowsHover]);
-                      }}
-                    >
-                      {render("Cell")}
-                    </td>
-                  );
-                })}
-              </tr>
+              <Fragment key={rowProps.key}>
+                <tr {...rowProps}>
+                  {row.cells.map(({ getCellProps, render }) => (
+                    <td {...getCellProps()}>{render("Cell")}</td>
+                  ))}
+                </tr>
+              </Fragment>
             );
           })}
         </tbody>
-      </Table>
+      </UsersTable>
     </Fragment>
   );
 };

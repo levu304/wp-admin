@@ -1,6 +1,5 @@
 import React, {
   memo,
-  useRef,
   useEffect,
   useState,
   useMemo,
@@ -8,7 +7,6 @@ import React, {
   Fragment,
 } from "react";
 import { Button, Row, Col, Form, Spinner } from "react-bootstrap";
-import { useClickOutside } from "../hooks/settings";
 import CategoriesListSelector from "./CategoriesListSelector";
 import DatePicker from "react-datepicker";
 import { usePosts } from "../hooks/posts";
@@ -17,9 +15,6 @@ import { formatRFC3339 } from "date-fns";
 
 export default memo(
   ({ row: { original }, rowProps, visibleColumns, onCancel }) => {
-    const wrapperRef = useRef(null);
-    useClickOutside(wrapperRef, onCancel);
-
     const { authors, statuses, updated, updatePost, toggleUpdate } = usePosts();
 
     const id = useMemo(() => original.id, [original]);
@@ -32,7 +27,7 @@ export default memo(
     );
     const [ping_status, setPingStatus] = useState(original.ping_status);
     const [tags, setTags] = useState(
-      original.tags.map(({ name }) => name).join(", ")
+      !original.tags ? "" : original.tags.map(({ name }) => name).join(", ")
     );
     const [author, setAuthor] = useState(original.author.id);
     const [date, setDate] = useState(new Date(original.date));
@@ -100,7 +95,7 @@ export default memo(
     };
 
     return (
-      <tr {...rowProps} ref={wrapperRef}>
+      <tr {...rowProps}>
         <td colSpan={visibleColumns.length}>
           <Row>
             <Col>

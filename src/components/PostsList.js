@@ -6,7 +6,7 @@ import React, {
   Fragment,
 } from "react";
 import { usePosts } from "../hooks/posts";
-import { Link, useLocation, useHistory } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { paramsToObject, toCapitalize } from "../common";
 import { useTable, useExpanded, useRowSelect } from "react-table";
 import { Table, Button, Form, FormControl } from "react-bootstrap";
@@ -76,11 +76,14 @@ export default () => {
         Header: "Title",
         accessor: "title",
         Cell: ({
+          rows,
           row: {
+            id,
             original: { title },
             index,
             getToggleRowExpandedProps,
           },
+          toggleRowExpanded,
         }) => (
           <Fragment>
             <Link
@@ -108,7 +111,15 @@ export default () => {
               <Button
                 variant="link"
                 className="p-0"
-                {...getToggleRowExpandedProps()}
+                {...getToggleRowExpandedProps({
+                  onClick: () => {
+                    const expandedRow = rows.find((row) => row.isExpanded);
+                    if (typeof expandedRow !== "undefined") {
+                      toggleRowExpanded(expandedRow.id, false);
+                    }
+                    toggleRowExpanded(id, true);
+                  },
+                })}
               >
                 <small>Quick Edit</small>
               </Button>
@@ -324,14 +335,10 @@ export default () => {
             />
             <Button
               as={Link}
-              to={
-                query === ""
-                  ? POSTS
-                  : {
-                      pathname: POSTS,
-                      search: `search=${query}`,
-                    }
-              }
+              to={{
+                pathname: POSTS,
+                search: `search=${query}`,
+              }}
               variant="outline-primary"
               size="sm"
             >
@@ -386,28 +393,27 @@ export default () => {
               </td>
             </tr>
           )}
-          {rows.length !== 0 &&
-            rows.map((row) => {
-              prepareRow(row);
-              const rowProps = row.getRowProps();
-              return (
-                <Fragment key={rowProps.key}>
-                  {row.isExpanded ? (
-                    <QuickEditPost
-                      row={row}
-                      rowProps={rowProps}
-                      visibleColumns={visibleColumns}
-                      onCancel={(e) => {
-                        row.toggleRowExpanded();
-                        getPosts(params);
-                      }}
-                    />
-                  ) : (
-                    renderRow(row)
-                  )}
-                </Fragment>
-              );
-            })}
+          {rows.map((row) => {
+            prepareRow(row);
+            const rowProps = row.getRowProps();
+            return (
+              <Fragment key={rowProps.key}>
+                {row.isExpanded ? (
+                  <QuickEditPost
+                    row={row}
+                    rowProps={rowProps}
+                    visibleColumns={visibleColumns}
+                    onCancel={(e) => {
+                      row.toggleRowExpanded();
+                      getPosts(params);
+                    }}
+                  />
+                ) : (
+                  renderRow(row)
+                )}
+              </Fragment>
+            );
+          })}
         </tbody>
       </PostsTable>
     </Fragment>
