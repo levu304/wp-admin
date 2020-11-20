@@ -32,6 +32,7 @@ export const usePosts = () => {
         }
       })
       .catch((error) => {
+        console.log(error.response);
         const { data, status } = error.response;
         switch (status) {
           case 401:
@@ -108,7 +109,6 @@ export const usePosts = () => {
       params,
     })
       .then((response) => {
-        console.log(response.data);
         const { status } = response;
         if (status === 200) {
           setUpdated(true);

@@ -318,8 +318,8 @@ export default () => {
               ))}
             </Form.Control>
             <Button
-              as={Link}
-              to={query === "" ? USERS : USERS + `?search=${query}`}
+              // as={Link}
+              // to={query === "" ? USERS : USERS + `?search=${query}`}
               variant="outline-primary"
               size="sm"
               onClick={changeRole}

@@ -6,7 +6,7 @@ import React, {
   Fragment,
 } from "react";
 import { usePosts } from "../hooks/posts";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useHistory } from "react-router-dom";
 import { paramsToObject, toCapitalize } from "../common";
 import { useTable, useExpanded, useRowSelect } from "react-table";
 import { Table, Button, Form, FormControl } from "react-bootstrap";
@@ -19,6 +19,7 @@ import QuickEditPost from "./QuickEditPost";
 import { useCategories } from "../hooks/categories";
 import CommentBadge from "./CommentBadge";
 import { load } from "react-cookies";
+import PostsFilter from "./PostsFilter";
 
 const PostsTable = styled(Table)`
   & tbody tr .row-actions {
@@ -27,19 +28,31 @@ const PostsTable = styled(Table)`
   & tbody tr:hover .row-actions {
     display: flex;
   }
+  & td:nth-child(1) {
+    width: 2%;
+  }
+  & td:nth-child(3) {
+    width: 8%;
+  }
+  & td:nth-child(2),
+  & td:nth-child(4),
+  & td:nth-child(5) {
+    width: 25%;
+  }
 `;
 
 export default () => {
   const { search } = useLocation();
   const defaultParams = { context: "edit", post_type: "post" };
-  const [offset, setOffset] = useState(1);
+  const [page, setPage] = useState(1);
+  const [per_page, setPerPage] = useState(10);
   const user = load("user");
 
   const params = useMemo(
     () =>
       search !== ""
-        ? { ...defaultParams, ...paramsToObject(search), offset }
-        : { ...defaultParams, offset },
+        ? { ...defaultParams, ...paramsToObject(search), page, per_page }
+        : { ...defaultParams, page, per_page },
     [search]
   );
   const { posts, getPosts, getAuthors, getPostStatuses } = usePosts();
@@ -247,9 +260,9 @@ export default () => {
   const renderRow = useCallback(
     ({ getRowProps, cells }) => (
       <tr {...getRowProps()}>
-        {cells.map(({ getCellProps, render }) => {
-          return <td {...getCellProps()}>{render("Cell")}</td>;
-        })}
+        {cells.map(({ getCellProps, render }) => (
+          <td {...getCellProps()}>{render("Cell")}</td>
+        ))}
       </tr>
     ),
     []
@@ -263,19 +276,39 @@ export default () => {
             <small>All</small>
           </Link>
           <span className="mx-2">{" | "}</span>
-          <Link to={POSTS + `?author[]=${user.id}`}>
+          <Link
+            to={{
+              pathname: POSTS,
+              search: `author=${user.id}`,
+            }}
+          >
             <small>Mine</small>
           </Link>
           <span className="mx-2">{" | "}</span>
-          <Link to={POSTS + `?status[]=publish`}>
+          <Link
+            to={{
+              pathname: POSTS,
+              search: `status=publish`,
+            }}
+          >
             <small>Published</small>
           </Link>
           <span className="mx-2">{" | "}</span>
-          <Link to={POSTS + `?sticky=true`}>
+          <Link
+            to={{
+              pathname: POSTS,
+              search: `sticky=true`,
+            }}
+          >
             <small>Sticky</small>
           </Link>
           <span className="mx-2">{" | "}</span>
-          <Link to={POSTS + `?status[]=private`}>
+          <Link
+            to={{
+              pathname: POSTS,
+              search: `status=private`,
+            }}
+          >
             <small>Private</small>
           </Link>
         </div>
@@ -291,7 +324,14 @@ export default () => {
             />
             <Button
               as={Link}
-              to={query === "" ? POSTS : POSTS + `?search=${query}`}
+              to={
+                query === ""
+                  ? POSTS
+                  : {
+                      pathname: POSTS,
+                      search: `search=${query}`,
+                    }
+              }
               variant="outline-primary"
               size="sm"
             >
@@ -300,7 +340,35 @@ export default () => {
           </Form>
         </div>
       </div>
-      <PostsTable striped bordered borderless {...getTableProps()}>
+      <div className="my-3 d-flex flex-row align-items-center justify-content-between">
+        <div className="d-flex flex-row">
+          <Form inline className="mr-3">
+            <Form.Control
+              as="select"
+              size="sm"
+              custom
+              // value={action}
+              // onChange={(e) => setAction(e.target.value)}
+              className="text-capitalize mr-sm-1"
+            >
+              <option value="">Bulk Actions</option>
+              <option value="delete">Edit</option>
+              <option value="trash">Move To Trash</option>
+            </Form.Control>
+            <Button variant="outline-primary" size="sm">
+              Apply
+            </Button>
+          </Form>
+          <PostsFilter />
+        </div>
+
+        <div>
+          <p className="mb-0">
+            <small>{`${posts.length} items`}</small>
+          </p>
+        </div>
+      </div>
+      <PostsTable hover bordered borderless {...getTableProps()}>
         <thead>
           {headerGroups.map(({ getHeaderGroupProps, headers }) => (
             <tr {...getHeaderGroupProps()}>
@@ -311,27 +379,35 @@ export default () => {
           ))}
         </thead>
         <tbody {...getTableBodyProps()}>
-          {rows.map((row) => {
-            prepareRow(row);
-            const rowProps = row.getRowProps();
-            return (
-              <Fragment key={rowProps.key}>
-                {row.isExpanded ? (
-                  <QuickEditPost
-                    row={row}
-                    rowProps={rowProps}
-                    visibleColumns={visibleColumns}
-                    onCancel={(e) => {
-                      row.toggleRowExpanded();
-                      getPosts(params);
-                    }}
-                  />
-                ) : (
-                  renderRow(row)
-                )}
-              </Fragment>
-            );
-          })}
+          {rows.length === 0 && (
+            <tr>
+              <td colSpan={visibleColumns.length} className="text-center">
+                <small>No posts found.</small>
+              </td>
+            </tr>
+          )}
+          {rows.length !== 0 &&
+            rows.map((row) => {
+              prepareRow(row);
+              const rowProps = row.getRowProps();
+              return (
+                <Fragment key={rowProps.key}>
+                  {row.isExpanded ? (
+                    <QuickEditPost
+                      row={row}
+                      rowProps={rowProps}
+                      visibleColumns={visibleColumns}
+                      onCancel={(e) => {
+                        row.toggleRowExpanded();
+                        getPosts(params);
+                      }}
+                    />
+                  ) : (
+                    renderRow(row)
+                  )}
+                </Fragment>
+              );
+            })}
         </tbody>
       </PostsTable>
     </Fragment>
