@@ -98,13 +98,13 @@ export default memo(
       <tr {...rowProps}>
         <td colSpan={visibleColumns.length}>
           <Row>
-            <Col>
+            <Col lg={4}>
               <h6 className="text-uppercase">Quick Edit</h6>
               <Form.Group as={Row} className="align-items-center mb-0">
-                <Form.Label column sm="2">
+                <Form.Label column sm="3">
                   <small className="font-italic">Title</small>
                 </Form.Label>
-                <Col sm="10">
+                <Col sm="9">
                   <Form.Control
                     type="text"
                     value={title}
@@ -114,10 +114,10 @@ export default memo(
                 </Col>
               </Form.Group>
               <Form.Group as={Row} className="align-items-center mb-0">
-                <Form.Label column sm="2">
+                <Form.Label column sm="3">
                   <small className="font-italic">Slug</small>
                 </Form.Label>
-                <Col sm="10">
+                <Col sm="9">
                   <Form.Control
                     type="text"
                     value={slug}
@@ -127,10 +127,10 @@ export default memo(
                 </Col>
               </Form.Group>
               <Form.Group as={Row} className="align-items-center mb-0">
-                <Form.Label column sm="2">
+                <Form.Label column sm="3">
                   <small className="font-italic">Date</small>
                 </Form.Label>
-                <Col sm="10">
+                <Col sm="9">
                   <DatePicker
                     className="form-control form-control-sm"
                     selected={date}
@@ -143,7 +143,7 @@ export default memo(
                 </Col>
               </Form.Group>
               <Form.Group as={Row} className="align-items-center mb-0">
-                <Form.Label column sm="2">
+                <Form.Label column sm="3">
                   <small className="font-italic">Author</small>
                 </Form.Label>
                 <Col sm="5">
@@ -164,7 +164,7 @@ export default memo(
               </Form.Group>
 
               <Form.Group as={Row} className="align-items-center mb-0">
-                <Form.Label column sm="2">
+                <Form.Label column sm="3">
                   <small className="font-italic">Password</small>
                 </Form.Label>
                 <Col sm="5">
@@ -176,7 +176,7 @@ export default memo(
                     disabled={status === "private"}
                   />
                 </Col>
-                <Col sm="3" className="px-0 d-flex align-items-center">
+                <Col sm="4" className="px-0 d-flex align-items-center">
                   <em>
                     <small>{"–OR–"} </small>
                   </em>
@@ -199,7 +199,7 @@ export default memo(
               </Form.Group>
             </Col>
 
-            <Col>
+            <Col lg={3}>
               <Form.Group>
                 <Form.Label>
                   <small className="font-italic">Categories</small>
@@ -211,7 +211,7 @@ export default memo(
               </Form.Group>
             </Col>
 
-            <Col>
+            <Col lg={5}>
               <Form.Group>
                 <Form.Label>
                   <small className="font-italic">Tags</small>
@@ -251,7 +251,7 @@ export default memo(
                 />
               </Form.Group>
               <Form.Group as={Row} className="align-items-center mb-0">
-                <Form.Label column sm="1">
+                <Form.Label column sm="2">
                   <small className="font-italic">Status</small>
                 </Form.Label>
                 <Col sm="4">
@@ -275,7 +275,7 @@ export default memo(
                       ))}
                   </Form.Control>
                 </Col>
-                <Col sm="4">
+                <Col sm="6">
                   <Form.Check
                     inline
                     label={

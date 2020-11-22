@@ -19,6 +19,7 @@ import {
   MEDIA_NEW,
   PAGE_NEW,
   POST_EDIT,
+  CATEGORY_EDIT,
 } from "./routes";
 import { BrowserRouter as Router, Switch, Route } from "react-router-dom";
 import { useSelector } from "react-redux";
@@ -41,6 +42,7 @@ import Tags from "./pages/Tags";
 import Categories from "./pages/Categories";
 import UserNew from "./pages/UserNew";
 import UserDelete from "./pages/UserDelete";
+import CategoryEdit from "./pages/CategoryEdit";
 
 function App() {
   const { toggleLoader } = useSelector((state) => state.settings);
@@ -53,7 +55,10 @@ function App() {
           <PrivateRoute component={Posts} path={POSTS} exact />
           <PrivateRoute component={PostNew} path={POST_NEW} exact />
           <PrivateRoute component={PostEdit} path={POST_EDIT} exact />
+
           <PrivateRoute component={Categories} path={CATEGORIES} exact />
+          <PrivateRoute component={CategoryEdit} path={CATEGORY_EDIT} exact />
+
           <PrivateRoute component={Tags} path={TAGS} exact />
 
           <PrivateRoute component={Media} path={MEDIA} exact />

@@ -20,14 +20,9 @@ import { useCategories } from "../hooks/categories";
 import CommentBadge from "./CommentBadge";
 import { load } from "react-cookies";
 import PostsFilter from "./PostsFilter";
+import TableActions from "./TableActions";
 
-const PostsTable = styled(Table)`
-  & tbody tr .row-actions {
-    display: none;
-  }
-  & tbody tr:hover .row-actions {
-    display: flex;
-  }
+const PostsTable = styled(TableActions)`
   & td:nth-child(1) {
     width: 2%;
   }
@@ -79,8 +74,7 @@ export default () => {
           rows,
           row: {
             id,
-            original: { title },
-            index,
+            original,
             getToggleRowExpandedProps,
           },
           toggleRowExpanded,
@@ -90,18 +84,18 @@ export default () => {
               to={{
                 pathname: POST_EDIT,
                 state: {
-                  post: posts[index],
+                  post: original,
                 },
               }}
             >
-              <small className="font-weight-bold">{title}</small>
+              <small className="font-weight-bold">{original.title}</small>
             </Link>
             <div className="row-actions flex-row align-items-center">
               <Link
                 to={{
                   pathname: POST_EDIT,
                   state: {
-                    post: posts[index],
+                    post: original,
                   },
                 }}
               >
@@ -375,7 +369,7 @@ export default () => {
           </p>
         </div>
       </div>
-      <PostsTable hover bordered borderless {...getTableProps()}>
+      <PostsTable {...getTableProps()}>
         <thead>
           {headerGroups.map(({ getHeaderGroupProps, headers }) => (
             <tr {...getHeaderGroupProps()}>

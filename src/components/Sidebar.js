@@ -16,6 +16,7 @@ import {
   PROFILE,
   MEDIA_NEW,
   PAGE_NEW,
+  CATEGORY_EDIT,
 } from "../routes";
 import {
   FaBookReader,
@@ -69,7 +70,7 @@ export default memo(() => {
   return (
     <Sidebar activeKey={pathname} className="flex-column">
       <hr />
-      {[POSTS, POST_NEW, CATEGORIES, TAGS].includes(pathname) ? (
+      {[POSTS, POST_NEW, CATEGORIES, CATEGORY_EDIT, TAGS].includes(pathname) ? (
         <Nav.Item>
           <NavLink
             to={POSTS}
@@ -124,7 +125,9 @@ export default memo(() => {
                 <small>
                   <span
                     className={
-                      pathname === CATEGORIES ? "font-weight-bold" : undefined
+                      [CATEGORIES, CATEGORY_EDIT].includes(pathname)
+                        ? "font-weight-bold"
+                        : undefined
                     }
                   >
                     Categories

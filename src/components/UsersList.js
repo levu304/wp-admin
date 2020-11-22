@@ -9,16 +9,7 @@ import UsersListSub from "./UsersListSub";
 import RowCheck from "./RowCheck";
 import { useRoles } from "../hooks/roles";
 import cookie from "react-cookies";
-import styled from "styled-components";
-
-const UsersTable = styled(Table)`
-  & tbody tr .row-actions {
-    display: none;
-  }
-  & tbody tr:hover .row-actions {
-    display: flex;
-  }
-`;
+import TableActions from "./TableActions";
 
 export default () => {
   const currentUser = cookie.load("user");
@@ -65,7 +56,7 @@ export default () => {
         accessor: "username",
         Cell: ({ row: { original } }) => (
           <Fragment>
-            <p className="mb-0">{original.username}</p>
+            <p className="mb-0"><small>{original.username}</small></p>
             <div className="row-actions flex-row align-items-center">
               <Link
                 to={{
@@ -285,7 +276,7 @@ export default () => {
           </p>
         </div>
       </div>
-      <UsersTable hover bordered borderless {...getTableProps()}>
+      <TableActions {...getTableProps()}>
         <thead>
           {headerGroups.map((headerGroup) => (
             <tr {...headerGroup.getHeaderGroupProps()}>
@@ -317,7 +308,7 @@ export default () => {
             );
           })}
         </tbody>
-      </UsersTable>
+      </TableActions>
     </Fragment>
   );
 };
