@@ -16,7 +16,7 @@ const Main = styled.div`
 export default memo(
   forwardRef(({ children, ...other }, ref) => {
     return (
-      <Main ref={ref} className="pt-4 pb-5" {...other}>
+      <Main ref={ref} className="pt-4 pb-5 px-2" {...other}>
         {children}
       </Main>
     );

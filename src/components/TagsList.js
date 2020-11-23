@@ -1,19 +1,36 @@
-import { useEffect, useMemo, useCallback, Fragment } from "react";
+import { useEffect, useState, useMemo, useCallback, Fragment } from "react";
 import { useTags } from "../hooks/tags";
 import { useTable, useRowSelect, useExpanded } from "react-table";
 import { Button } from "react-bootstrap";
 import TableActions from "./TableActions";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import RowCheck from "./RowCheck";
 import { CATEGORY_EDIT } from "../routes";
 import FormActions from "./FormActions";
+import Pagination from "./Pagination";
+import { paramsToObject } from "../common";
 
 export default () => {
+  const { search } = useLocation();
+  const defaultParams = { context: "edit", taxonomy: "post_tag", per_page: 10 };
+  const params = useMemo(
+    () =>
+      search !== ""
+        ? { ...defaultParams, ...paramsToObject(search) }
+        : defaultParams,
+    [search]
+  );
   const { tags, getTags } = useTags();
+  const [page, setPage] = useState(1);
 
   useEffect(() => {
-    getTags({ context: "edit" });
-  }, []);
+    getTags({ ...params, page });
+  }, [page]);
+
+  useEffect(() => {
+    setPage(1);
+    getTags({ ...params, page: 1 });
+  }, [params]);
 
   const columns = useMemo(
     () => [
@@ -155,9 +172,18 @@ export default () => {
         />
 
         <div>
-          <p className="mb-0">
+          <p className="mb-0 d-inline-block">
             <small>{`${tags.length} items`}</small>
           </p>
+
+          <Pagination
+            className="d-inline-flex ml-2"
+            page={page}
+            disabledPrev={page === 1}
+            disabledNext={tags.length === 0 || tags.length < 10}
+            prev={(e) => setPage(page - 1)}
+            next={(e) => setPage(page + 1)}
+          />
         </div>
       </div>
       <TableActions {...getTableProps()}>

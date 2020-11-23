@@ -1,19 +1,36 @@
-import { useEffect, useMemo,useCallback, Fragment } from "react";
+import { useEffect, useState, useMemo, useCallback, Fragment } from "react";
 import { useCategories } from "../hooks/categories";
 import { useTable, useRowSelect, useExpanded } from "react-table";
 import { Button } from "react-bootstrap";
 import TableActions from "./TableActions";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import RowCheck from "./RowCheck";
 import { CATEGORY_EDIT } from "../routes";
-import FormActions from './FormActions'
+import FormActions from "./FormActions";
+import Pagination from "./Pagination";
+import { paramsToObject } from "../common";
 
 export default () => {
+  const { search } = useLocation();
+  const defaultParams = { context: "edit", taxonomy: "post_tag", per_page: 10 };
+  const params = useMemo(
+    () =>
+      search !== ""
+        ? { ...defaultParams, ...paramsToObject(search) }
+        : defaultParams,
+    [search]
+  );
   const { categories, getCatetories } = useCategories();
+  const [page, setPage] = useState(1);
 
   useEffect(() => {
-    getCatetories({ context: "edit" });
-  }, []);
+    getCatetories({ ...params, page });
+  }, [page]);
+
+  useEffect(() => {
+    setPage(1);
+    getCatetories({ ...params, page: 1 });
+  }, [params]);
 
   const columns = useMemo(
     () => [
@@ -129,34 +146,44 @@ export default () => {
     }
   );
 
-  const applyAction = useCallback(
-    (value) => {
-      switch (value) {
-        case "delete":
-          break;
-  
-        default:
-          break;
-      }
-    },
-    [],
-  );
+  const applyAction = useCallback((value) => {
+    switch (value) {
+      case "delete":
+        break;
+
+      default:
+        break;
+    }
+  }, []);
 
   return (
     <Fragment>
       <div className="mb-3 d-flex flex-row align-items-center justify-content-between">
-
-        <FormActions inline actions={[
-          {
-            value: "delete",
-            name: "Delete"
-          }
-        ]} className="mr-3" apply={applyAction} />
+        <FormActions
+          inline
+          actions={[
+            {
+              value: "delete",
+              name: "Delete",
+            },
+          ]}
+          className="mr-3"
+          apply={applyAction}
+        />
 
         <div>
-          <p className="mb-0">
+          <p className="mb-0 d-inline-block">
             <small>{`${categories.length} items`}</small>
           </p>
+
+          <Pagination
+            className="d-inline-flex ml-2"
+            page={page}
+            disabledPrev={page === 1}
+            disabledNext={categories.length === 0 || categories.length < 10}
+            prev={(e) => setPage(page - 1)}
+            next={(e) => setPage(page + 1)}
+          />
         </div>
       </div>
       <TableActions {...getTableProps()}>

@@ -13,11 +13,14 @@ export default () => {
 
   const search = useCallback(
     (query) =>
-      query !== "" &&
-      push({
-        pathname: TAGS,
-        search: `search=${query}`,
-      }),
+      query !== ""
+        ? push({
+            pathname: TAGS,
+            search: `search=${query}`,
+          })
+        : push({
+            pathname: TAGS,
+          }),
     []
   );
 
