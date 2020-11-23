@@ -1,6 +1,6 @@
-import React, { memo } from "react";
+import { memo } from "react";
 import { Navbar, Nav, NavDropdown } from "react-bootstrap";
-import cookie from "react-cookies";
+import { load } from "react-cookies";
 import { Link } from "react-router-dom";
 import styled from "styled-components";
 import { useAuthentication } from "../hooks/auth";
@@ -24,7 +24,7 @@ const CustomNavbar = styled(Navbar)`
 `;
 
 export default memo(() => {
-  const user = cookie.load("user");
+  const user = load("user");
 
   const { logout } = useAuthentication();
 

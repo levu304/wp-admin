@@ -1,4 +1,4 @@
-import React, { Fragment, memo } from "react";
+import { Fragment, memo } from "react";
 import { useLocation, NavLink, Link } from "react-router-dom";
 import { Nav, NavDropdown } from "react-bootstrap";
 import {
@@ -27,7 +27,7 @@ import {
   FaCopy,
 } from "react-icons/fa";
 import styled from "styled-components";
-import cookie from "react-cookies";
+import { load } from "react-cookies";
 
 const Sidebar = styled(Nav)`
   & a:hover,
@@ -65,7 +65,7 @@ const Sidebar = styled(Nav)`
 
 export default memo(() => {
   const { pathname } = useLocation();
-  const user = cookie.load("user");
+  const user = load("user");
 
   return (
     <Sidebar activeKey={pathname} className="flex-column">
@@ -158,10 +158,7 @@ export default memo(() => {
         <NavDropdown
           drop="right"
           className={
-            pathname === POSTS ||
-            pathname === POST_NEW ||
-            pathname === CATEGORIES ||
-            pathname === TAGS
+            [POSTS, POST_NEW, CATEGORIES, TAGS].includes(pathname)
               ? "bg-primary"
               : undefined
           }
@@ -238,9 +235,7 @@ export default memo(() => {
         <NavDropdown
           drop="right"
           className={
-            pathname === MEDIA || pathname === MEDIA_NEW
-              ? "bg-primary"
-              : undefined
+            [MEDIA, MEDIA_NEW].includes(pathname) ? "bg-primary" : undefined
           }
           title={
             <Fragment>
@@ -309,9 +304,7 @@ export default memo(() => {
         <NavDropdown
           drop="right"
           className={
-            pathname === PAGES || pathname === PAGE_NEW
-              ? "bg-primary"
-              : undefined
+            [PAGES, PAGE_NEW].includes(pathname) ? "bg-primary" : undefined
           }
           title={
             <Fragment>
@@ -341,7 +334,9 @@ export default memo(() => {
 
       <hr />
 
-      {typeof user.capabilities["list_users"] === "undefined" ? (
+      {typeof user !== "undefined" &&
+      typeof user["capabilities"] !== "undefined" &&
+      typeof user.capabilities["list_users"] === "undefined" ? (
         <Nav.Item className={pathname === PROFILE ? "bg-primary" : undefined}>
           <NavLink
             to={{
@@ -380,9 +375,7 @@ export default memo(() => {
                 <small>
                   <span
                     className={
-                      pathname === USERS ||
-                      pathname === USER_DELETE ||
-                      pathname === USER_EDIT
+                      [USERS, USER_DELETE, USER_EDIT].includes(pathname)
                         ? "font-weight-bold"
                         : undefined
                     }
@@ -437,7 +430,7 @@ export default memo(() => {
         <NavDropdown
           drop="right"
           className={
-            pathname === USERS || pathname === USER_NEW || pathname === PROFILE
+            [USERS, USER_NEW, PROFILE].includes(pathname)
               ? "bg-primary"
               : undefined
           }

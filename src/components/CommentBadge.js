@@ -1,4 +1,4 @@
-import React, { memo } from "react";
+import { memo } from "react";
 import { FaCommentAlt } from "react-icons/fa";
 import { Link } from "react-router-dom";
 import { COMMENTS } from "../routes";

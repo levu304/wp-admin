@@ -1,12 +1,12 @@
 import { useState } from "react";
 import API from "../api";
-import cookie from "react-cookies";
+import { load } from "react-cookies";
 import { useAuthentication } from "./auth";
 import { useHistory } from "react-router-dom";
 import { USERS } from "../routes";
 
 export const useUsers = () => {
-  const Authorization = cookie.load("Authorization");
+  const Authorization = load("Authorization");
   const { push, replace } = useHistory();
   const [users, setUsers] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -46,9 +46,8 @@ export const useUsers = () => {
       .finally(() => setIsLoading(false));
   };
 
-  const addUser = (params) => {
-    const user = cookie.load("user");
-    setIsLoading(true);
+  const addUser = (params, callback) => {
+    const user = load("user");
     API.post("/users", null, {
       headers: {
         Authorization,
@@ -56,17 +55,14 @@ export const useUsers = () => {
       params: { ...params, id: user.ID },
     })
       .then((response) => {
-        setIsLoading(false);
-        const {
-          status,
-          data: { data },
-        } = response;
+        callback();
+        const { status } = response;
         if (status === 201) {
           push(USERS);
         }
       })
       .catch((error) => {
-        setIsLoading(false);
+        callback();
         const { data, status } = error.response;
         switch (status) {
           case 401:

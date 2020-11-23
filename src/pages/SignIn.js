@@ -1,4 +1,4 @@
-import React, { Fragment, useState } from "react";
+import { Fragment, useState } from "react";
 import {
   Card,
   Container,
@@ -12,13 +12,50 @@ import {
 import { Link } from "react-router-dom";
 import { PASSWORD_FORGET } from "../routes";
 import { useAuthentication } from "../hooks/auth";
+import { useFormik } from "formik";
+import { string, object } from "yup";
+import { LANDING } from "../routes";
+import { useHistory } from "react-router-dom";
+import { save } from "react-cookies";
 
 export default () => {
-  const { isSubmit, error, login } = useAuthentication();
+  const { login } = useAuthentication();
+  const { replace } = useHistory();
 
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
-  const [remember, setRemember] = useState(false);
+  const [errorMessage, setErrorMessage] = useState(null);
+
+  const submit = (values, { setSubmitting }) =>
+    login(values, (response, error = false) => {
+      setSubmitting(false);
+      if (error) {
+        setErrorMessage(response.data[0].message);
+        return;
+      }
+      const { user, authorization } = response;
+      save("Authorization", authorization, { path: "/" });
+      save("user", user, { path: "/" });
+      replace(LANDING, "urlhistory");
+    });
+
+  const {
+    values,
+    errors,
+    touched,
+    handleChange,
+    handleSubmit,
+    isSubmitting,
+  } = useFormik({
+    initialValues: {
+      username: "",
+      password: "",
+      remember: false,
+    },
+    onSubmit: submit,
+    validationSchema: object({
+      username: string().required(),
+      password: string().required(),
+    }),
+  });
 
   return (
     <Container className="h-100">
@@ -29,23 +66,23 @@ export default () => {
             offset: 4,
           }}
         >
-          {error && (
-            <Alert
-              variant="danger"
-            >
-              <small dangerouslySetInnerHTML={{ __html: error }} />
+          {errorMessage && (
+            <Alert variant="danger">
+              <small dangerouslySetInnerHTML={{ __html: errorMessage }} />
             </Alert>
           )}
           <Card className="mb-3">
             <Card.Body>
-              <Form>
+              <Form onSubmit={handleSubmit}>
                 <Form.Group>
                   <Form.Label>Username</Form.Label>
                   <Form.Control
                     type="text"
-                    value={username}
-                    onChange={(e) => setUsername(e.target.value)}
-                    disabled={isSubmit}
+                    name="username"
+                    onChange={handleChange}
+                    disabled={isSubmitting}
+                    value={values.username}
+                    isInvalid={touched.username && errors.username}
                   />
                 </Form.Group>
 
@@ -53,9 +90,11 @@ export default () => {
                   <Form.Label>Password</Form.Label>
                   <Form.Control
                     type="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    disabled={isSubmit}
+                    name="password"
+                    onChange={handleChange}
+                    disabled={isSubmitting}
+                    value={values.password}
+                    isInvalid={touched.password && errors.password}
                   />
                 </Form.Group>
 
@@ -64,17 +103,16 @@ export default () => {
                     <Form.Check
                       type="checkbox"
                       label="Remember me"
-                      checked={remember}
-                      onChange={e => setRemember(e.target.checked)}
+                      name="remember"
                     />
                   </Col>
                   <Col className="text-right">
                     <Button
                       variant="primary"
-                      onClick={e => login(username, password, remember)}
-                      disabled={isSubmit}
+                      type="submit"
+                      disabled={isSubmitting}
                     >
-                      {isSubmit ? (
+                      {isSubmitting ? (
                         <Fragment>
                           <Spinner
                             as="span"

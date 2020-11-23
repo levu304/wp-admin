@@ -1,20 +1,54 @@
-import React, { useState } from "react";
+import { Fragment } from "react";
 import PageTitle from "../components/PageTitle";
-import { Form, Row, Col, Button } from "react-bootstrap";
+import { Form, Row, Col, Button, Spinner } from "react-bootstrap";
 import { useRoles } from "../hooks/roles";
 import { useUsers } from "../hooks/users";
 import Main from "../components/Main";
+import { useFormik } from "formik";
+import { string, object } from "yup";
 
 export default () => {
   const { roles } = useRoles();
   const { addUser } = useUsers();
 
-  const [username, setUsername] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [first_name, setFirstName] = useState("");
-  const [last_name, setLastName] = useState("");
-  const [role, setRole] = useState("subscriber");
+  const submit = (values, { setSubmitting }) =>
+    addUser(
+      {
+        ...values,
+        name:
+          values.first_name !== "" && values.last_name !== ""
+            ? `${values.first_name} ${values.last_name}`
+            : "",
+        roles: [values.roles],
+      },
+      () => setSubmitting(false)
+    );
+
+  const {
+    values,
+    errors,
+    touched,
+    handleChange,
+    handleSubmit,
+    isSubmitting,
+  } = useFormik({
+    initialValues: {
+      username: "",
+      email: "",
+      password: "",
+      first_name: "",
+      last_name: "",
+      roles: "subscriber",
+    },
+    onSubmit: submit,
+    validationSchema: object().shape({
+      username: string()
+        .matches(/^[a-z]+$/)
+        .required("Please Enter username"),
+      email: string().email().required("Please Enter password"),
+      password: string().required("Please Enter password"),
+    }),
+  });
 
   return (
     <Main>
@@ -23,7 +57,7 @@ export default () => {
         <small>Create a brand new user and add them to this site.</small>
       </p>
 
-      <Form>
+      <Form onSubmit={handleSubmit}>
         <Form.Group as={Row} className="align-items-center">
           <Form.Label column lg="3">
             <small className="font-weight-bold">
@@ -34,8 +68,11 @@ export default () => {
             <Form.Control
               type="text"
               size="sm"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
+              name="username"
+              value={values.username}
+              isInvalid={touched.username && errors.username}
+              onChange={handleChange}
+              disabled={isSubmitting}
             />
           </Col>
         </Form.Group>
@@ -49,8 +86,11 @@ export default () => {
             <Form.Control
               type="email"
               size="sm"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              name="email"
+              value={values.email}
+              isInvalid={touched.email && errors.email}
+              onChange={handleChange}
+              disabled={isSubmitting}
             />
           </Col>
         </Form.Group>
@@ -62,8 +102,10 @@ export default () => {
             <Form.Control
               type="text"
               size="sm"
-              value={first_name}
-              onChange={(e) => setFirstName(e.target.value)}
+              name="first_name"
+              value={values.first_name}
+              onChange={handleChange}
+              disabled={isSubmitting}
             />
           </Col>
         </Form.Group>
@@ -75,8 +117,10 @@ export default () => {
             <Form.Control
               type="text"
               size="sm"
-              value={last_name}
-              onChange={(e) => setLastName(e.target.value)}
+              name="last_name"
+              value={values.last_name}
+              onChange={handleChange}
+              disabled={isSubmitting}
             />
           </Col>
         </Form.Group>
@@ -86,10 +130,13 @@ export default () => {
           </Form.Label>
           <Col lg="5">
             <Form.Control
-              type="password"
+              type="text"
               size="sm"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              name="password"
+              value={values.password}
+              isInvalid={touched.password && errors.password}
+              onChange={handleChange}
+              disabled={isSubmitting}
             />
           </Col>
         </Form.Group>
@@ -102,9 +149,11 @@ export default () => {
               as="select"
               size="sm"
               custom
-              value={role}
-              onChange={(e) => setRole(e.target.value)}
+              name="role"
+              value={values.roles}
+              onChange={handleChange}
               className="text-capitalize"
+              disabled={isSubmitting}
             >
               {roles.map(({ name }, index) => (
                 <option key={index} value={name} className="text-capitalize">
@@ -119,22 +168,23 @@ export default () => {
           size="sm"
           className="mt-3"
           variant="primary"
-          onClick={(e) =>
-            addUser({
-              username: username.toLowerCase(),
-              email,
-              password,
-              first_name,
-              last_name,
-              name:
-                first_name !== "" && last_name !== ""
-                  ? `${first_name} ${last_name}`
-                  : "",
-              roles: [role],
-            })
-          }
+          type="submit"
+          disabled={isSubmitting}
         >
-          Add New User
+          {isSubmitting ? (
+            <Fragment>
+              <Spinner
+                as="span"
+                animation="border"
+                size="sm"
+                role="status"
+                aria-hidden="true"
+              />
+              Add New User
+            </Fragment>
+          ) : (
+            "Add New User"
+          )}
         </Button>
       </Form>
     </Main>

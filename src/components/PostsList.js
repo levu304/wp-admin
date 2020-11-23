@@ -1,10 +1,4 @@
-import React, {
-  useMemo,
-  useState,
-  useEffect,
-  useCallback,
-  Fragment,
-} from "react";
+import { useMemo, useState, useEffect, useCallback, Fragment } from "react";
 import { usePosts } from "../hooks/posts";
 import { Link, useLocation } from "react-router-dom";
 import { paramsToObject, toCapitalize } from "../common";
@@ -72,11 +66,7 @@ export default () => {
         accessor: "title",
         Cell: ({
           rows,
-          row: {
-            id,
-            original,
-            getToggleRowExpandedProps,
-          },
+          row: { id, original, getToggleRowExpandedProps },
           toggleRowExpanded,
         }) => (
           <Fragment>

@@ -1,5 +1,5 @@
 import React, { useMemo, useState, useEffect, Fragment } from "react";
-import { Table, Form, FormControl, Button } from "react-bootstrap";
+import { Form, FormControl, Button } from "react-bootstrap";
 import { Link, useLocation, useHistory } from "react-router-dom";
 import { useTable, useRowSelect } from "react-table";
 import { useUsers } from "../hooks/users";
@@ -56,7 +56,9 @@ export default () => {
         accessor: "username",
         Cell: ({ row: { original } }) => (
           <Fragment>
-            <p className="mb-0"><small>{original.username}</small></p>
+            <p className="mb-0">
+              <small>{original.username}</small>
+            </p>
             <div className="row-actions flex-row align-items-center">
               <Link
                 to={{

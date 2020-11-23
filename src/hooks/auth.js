@@ -1,50 +1,33 @@
-import { useState } from "react";
-import cookie from "react-cookies";
+import { remove, load } from "react-cookies";
 import API from "../api";
-import { SIGN_IN, LANDING } from "../routes";
+import { SIGN_IN } from "../routes";
 import { useHistory } from "react-router-dom";
 
 export const useAuthentication = () => {
   const { replace } = useHistory();
 
-  const [isSubmit, setIsSubmit] = useState(false);
-  const [error, setError] = useState(null)
-
-  const login = (user_login, user_password, remember) => {
+  const login = ({ username, password, remember }, callback) => {
     API.post("/login", {
-      user_login,
-      user_password,
+      user_login: username,
+      user_password: password,
       remember,
     })
       .then((response) => {
-        setIsSubmit(false);
         const {
           status,
           data: { data },
         } = response;
         if (status === 200) {
-          const { user, authorization } = data;
-          cookie.save("Authorization", authorization, { path: "/" });
-          cookie.save("user", user, { path: "/" });
-          replace(LANDING, "urlhistory");
+          callback(data);
         }
       })
       .catch((error) => {
-        setIsSubmit(false);
-        const { data, status } = error.response;
-        switch (status) {
-          case 401:
-            const { message } = data.data[0];
-            setError(message);
-            break;
-          default:
-            break;
-        }
+        callback(error.response.data, true);
       });
   };
 
   const logout = () => {
-    const Authorization = cookie.load("Authorization");
+    const Authorization = load("Authorization");
     API.get("/logout", {
       headers: {
         Authorization,
@@ -53,8 +36,8 @@ export const useAuthentication = () => {
       .then((response) => {
         const { status } = response;
         if (status === 200) {
-          cookie.remove("Authorization", { path: "/" });
-          cookie.remove("user", { path: "/" });
+          remove("Authorization", { path: "/" });
+          remove("user", { path: "/" });
         }
       })
       .catch((error) => {
@@ -63,5 +46,5 @@ export const useAuthentication = () => {
       .finally(() => replace(SIGN_IN, "urlhistory"));
   };
 
-  return { logout, login, isSubmit, error };
+  return { logout, login };
 };
