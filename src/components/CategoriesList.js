@@ -9,10 +9,11 @@ import { CATEGORY_EDIT } from "../routes";
 import FormActions from "./FormActions";
 import Pagination from "./Pagination";
 import { paramsToObject } from "../common";
+import TableCell from "./TableCell";
 
 export default () => {
   const { search } = useLocation();
-  const defaultParams = { context: "edit", taxonomy: "post_tag", per_page: 10 };
+  const defaultParams = { context: "edit", taxonomy: "category", per_page: 10 };
   const params = useMemo(
     () =>
       search !== ""
@@ -177,12 +178,12 @@ export default () => {
           </p>
 
           <Pagination
-            className="d-inline-flex ml-2"
+            className="d-inline-flex ml-2 mb-0"
             page={page}
             disabledPrev={page === 1}
             disabledNext={categories.length === 0 || categories.length < 10}
-            prev={(e) => setPage(page - 1)}
-            next={(e) => setPage(page + 1)}
+            prev={useCallback((e) => setPage(page - 1), [page])}
+            next={useCallback((e) => setPage(page + 1), [page])}
           />
         </div>
       </div>
@@ -211,7 +212,9 @@ export default () => {
               <Fragment key={rowProps.key}>
                 <tr {...rowProps}>
                   {row.cells.map(({ getCellProps, render }) => (
-                    <td {...getCellProps()}>{render("Cell")}</td>
+                    <td {...getCellProps()}>
+                      <TableCell>{render("Cell")}</TableCell>
+                    </td>
                   ))}
                 </tr>
               </Fragment>

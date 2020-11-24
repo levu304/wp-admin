@@ -1,5 +1,6 @@
 const initState = {
   categories: [],
+  allCategories: [],
 };
 
 export default (state = initState, { type, payload }) => {
@@ -8,6 +9,11 @@ export default (state = initState, { type, payload }) => {
       return {
         ...state,
         categories: payload.categories,
+      };
+    case "SET_ALL_CATEGORIES":
+      return {
+        ...state,
+        allCategories: payload.categories,
       };
     default:
       return state;

@@ -1,10 +1,15 @@
+import { useEffect } from "react";
 import { Row, Col, Button, Form } from "react-bootstrap";
 import { useCategories } from "../hooks/categories";
 import { useFormik } from "formik";
 import { string, object } from "yup";
 
 export default () => {
-  const { categories, createCategory } = useCategories();
+  const { getAllCategories, allCategories, createCategory } = useCategories();
+
+  useEffect(() => {
+    getAllCategories();
+  }, []);
 
   const submit = (values, { setSubmitting }) =>
     createCategory(values, () => setSubmitting(false));
@@ -87,7 +92,7 @@ export default () => {
             value={values.parent}
           >
             <option value="-1">None</option>
-            {categories.map(({ id, name }) => (
+            {allCategories.map(({ id, name }) => (
               <option key={id} value={id}>
                 {name}
               </option>

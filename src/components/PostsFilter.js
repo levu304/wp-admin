@@ -1,15 +1,13 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, memo, useEffect } from "react";
 import { Form, Button } from "react-bootstrap";
 import DatePicker from "react-datepicker";
-import { useLocation, useHistory } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import { paramsToObject } from "../common";
 import { useCategories } from "../hooks/categories";
-import { POSTS } from "../routes";
 import { startOfMonth, endOfMonth, formatRFC3339 } from "date-fns";
 
-export default () => {
+export default memo(({ onFilter }) => {
   const { search } = useLocation();
-  const { push } = useHistory();
   const params = useMemo(() => (search === "" ? {} : paramsToObject(search)), [
     search,
   ]);
@@ -29,17 +27,7 @@ export default () => {
   const filter = () => {
     const before = formatRFC3339(endOfMonth(date));
     const after = formatRFC3339(startOfMonth(date));
-    if (category === "") {
-      push({
-        pathname: POSTS,
-        search: `before=${before}&after=${after}`,
-      });
-      return;
-    }
-    push({
-      pathname: POSTS,
-      search: `before=${before}&after=${after}&categories[]=${category}`,
-    });
+    onFilter(category, { before, after });
   };
 
   return (
@@ -75,4 +63,4 @@ export default () => {
       </Button>
     </Form>
   );
-};
+});

@@ -10,6 +10,20 @@ import RowCheck from "./RowCheck";
 import { useRoles } from "../hooks/roles";
 import cookie from "react-cookies";
 import TableActions from "./TableActions";
+import TableCell from "./TableCell";
+import styled from "styled-components";
+
+const UsersTable = styled(TableActions)`
+  & td:nth-child(1) {
+    width: 2%;
+  }
+  & td:nth-child(3),
+  & td:nth-child(2),
+  & td:nth-child(4),
+  & td:nth-child(5) {
+    width: 20%;
+  }
+`;
 
 export default () => {
   const currentUser = cookie.load("user");
@@ -278,7 +292,7 @@ export default () => {
           </p>
         </div>
       </div>
-      <TableActions {...getTableProps()}>
+      <UsersTable {...getTableProps()}>
         <thead>
           {headerGroups.map((headerGroup) => (
             <tr {...headerGroup.getHeaderGroupProps()}>
@@ -303,14 +317,16 @@ export default () => {
               <Fragment key={rowProps.key}>
                 <tr {...rowProps}>
                   {row.cells.map(({ getCellProps, render }) => (
-                    <td {...getCellProps()}>{render("Cell")}</td>
+                    <td {...getCellProps()}>
+                      <TableCell>{render("Cell")}</TableCell>
+                    </td>
                   ))}
                 </tr>
               </Fragment>
             );
           })}
         </tbody>
-      </TableActions>
+      </UsersTable>
     </Fragment>
   );
 };

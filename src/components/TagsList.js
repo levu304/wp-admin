@@ -9,6 +9,7 @@ import { CATEGORY_EDIT } from "../routes";
 import FormActions from "./FormActions";
 import Pagination from "./Pagination";
 import { paramsToObject } from "../common";
+import TableCell from "./TableCell";
 
 export default () => {
   const { search } = useLocation();
@@ -177,7 +178,7 @@ export default () => {
           </p>
 
           <Pagination
-            className="d-inline-flex ml-2"
+            className="d-inline-flex ml-2 mb-0"
             page={page}
             disabledPrev={page === 1}
             disabledNext={tags.length === 0 || tags.length < 10}
@@ -211,7 +212,9 @@ export default () => {
               <Fragment key={rowProps.key}>
                 <tr {...rowProps}>
                   {row.cells.map(({ getCellProps, render }) => (
-                    <td {...getCellProps()}>{render("Cell")}</td>
+                    <td {...getCellProps()}>
+                      <TableCell>{render("Cell")}</TableCell>
+                    </td>
                   ))}
                 </tr>
               </Fragment>

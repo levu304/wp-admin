@@ -1,9 +1,9 @@
 import { useMemo, useState, useEffect, useCallback, Fragment } from "react";
 import { usePosts } from "../hooks/posts";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useHistory } from "react-router-dom";
 import { paramsToObject, toCapitalize } from "../common";
 import { useTable, useExpanded, useRowSelect } from "react-table";
-import { Table, Button, Form, FormControl } from "react-bootstrap";
+import { Button, Form, FormControl } from "react-bootstrap";
 import { FaCommentAlt } from "react-icons/fa";
 import { POSTS, POST_EDIT } from "../routes";
 import { format } from "date-fns";
@@ -15,6 +15,10 @@ import CommentBadge from "./CommentBadge";
 import { load } from "react-cookies";
 import PostsFilter from "./PostsFilter";
 import TableActions from "./TableActions";
+import FormActions from "./FormActions";
+import Pagination from "./Pagination";
+import BulkEditPosts from "./BulkEditPosts";
+import TableCell from "./TableCell";
 
 const PostsTable = styled(TableActions)`
   & td:nth-child(1) {
@@ -23,25 +27,25 @@ const PostsTable = styled(TableActions)`
   & td:nth-child(3) {
     width: 8%;
   }
-  & td:nth-child(2),
   & td:nth-child(4),
   & td:nth-child(5) {
-    width: 25%;
+    width: 18%;
   }
 `;
 
 export default () => {
   const { search } = useLocation();
-  const defaultParams = { context: "edit", post_type: "post" };
+  const { push } = useHistory();
+
+  const defaultParams = { context: "edit", post_type: "post", per_page: 10 };
   const [page, setPage] = useState(1);
-  const [per_page, setPerPage] = useState(10);
   const user = load("user");
 
   const params = useMemo(
     () =>
       search !== ""
-        ? { ...defaultParams, ...paramsToObject(search), page, per_page }
-        : { ...defaultParams, page, per_page },
+        ? { ...defaultParams, ...paramsToObject(search) }
+        : { ...defaultParams },
     [search]
   );
   const { posts, getPosts, getAuthors, getPostStatuses } = usePosts();
@@ -54,10 +58,16 @@ export default () => {
   }, []);
 
   useEffect(() => {
-    getPosts(params);
+    getPosts({ ...params, page });
+  }, [page]);
+
+  useEffect(() => {
+    setPage(1);
+    getPosts({ ...params, page: 1 });
   }, [params]);
 
   const [query, setQuery] = useState("");
+  const [isBulkEdit, setIsBulkEdit] = useState(false);
 
   const columns = useMemo(
     () => [
@@ -97,6 +107,7 @@ export default () => {
                 className="p-0"
                 {...getToggleRowExpandedProps({
                   onClick: () => {
+                    setIsBulkEdit(false);
                     const expandedRow = rows.find((row) => row.isExpanded);
                     if (typeof expandedRow !== "undefined") {
                       toggleRowExpanded(expandedRow.id, false);
@@ -231,6 +242,8 @@ export default () => {
     prepareRow,
     visibleColumns,
     selectedFlatRows,
+    toggleRowSelected,
+    toggleRowExpanded,
   } = useTable(
     {
       columns,
@@ -252,11 +265,58 @@ export default () => {
     }
   );
 
+  const applyAction = useCallback(
+    (value) => {
+      if (selectedFlatRows.length === 0) return;
+      switch (value) {
+        case "delete":
+          break;
+        case "edit":
+          const expandedRow = rows.find((row) => row.isExpanded);
+          if (typeof expandedRow !== "undefined") {
+            toggleRowExpanded(expandedRow.id, false);
+          }
+          setIsBulkEdit(true);
+          break;
+        default:
+          break;
+      }
+    },
+    [isBulkEdit, selectedFlatRows]
+  );
+
+  const onCancelBulkEdit = useCallback((e) => setIsBulkEdit(false), [
+    isBulkEdit,
+  ]);
+
+  const onRemoveBulkEdit = useCallback((id) => toggleRowSelected(id), []);
+
+  const onFilter = useCallback((category, { before, after }) => {
+    setIsBulkEdit(false);
+    const expandedRow = rows.find((row) => row.isExpanded);
+    if (typeof expandedRow !== "undefined") {
+      toggleRowExpanded(expandedRow.id, false);
+    }
+    if (category === "") {
+      push({
+        pathname: POSTS,
+        search: `before=${before}&after=${after}`,
+      });
+      return;
+    }
+    push({
+      pathname: POSTS,
+      search: `before=${before}&after=${after}&categories[]=${category}`,
+    });
+  }, []);
+
   const renderRow = useCallback(
     ({ getRowProps, cells }) => (
       <tr {...getRowProps()}>
         {cells.map(({ getCellProps, render }) => (
-          <td {...getCellProps()}>{render("Cell")}</td>
+          <td {...getCellProps()}>
+            <TableCell>{render("Cell")}</TableCell>
+          </td>
         ))}
       </tr>
     ),
@@ -333,30 +393,37 @@ export default () => {
       </div>
       <div className="my-3 d-flex flex-row align-items-center justify-content-between">
         <div className="d-flex flex-row">
-          <Form inline className="mr-3">
-            <Form.Control
-              as="select"
-              size="sm"
-              custom
-              // value={action}
-              // onChange={(e) => setAction(e.target.value)}
-              className="text-capitalize mr-sm-1"
-            >
-              <option value="">Bulk Actions</option>
-              <option value="delete">Edit</option>
-              <option value="trash">Move To Trash</option>
-            </Form.Control>
-            <Button variant="outline-primary" size="sm">
-              Apply
-            </Button>
-          </Form>
-          <PostsFilter />
+          <FormActions
+            inline
+            actions={[
+              {
+                value: "edit",
+                name: "Edit",
+              },
+              {
+                value: "trash",
+                name: "Move To Trash",
+              },
+            ]}
+            className="mr-3"
+            apply={applyAction}
+          />
+          <PostsFilter onFilter={onFilter} />
         </div>
 
         <div>
-          <p className="mb-0">
+          <p className="mb-0 d-inline-block">
             <small>{`${posts.length} items`}</small>
           </p>
+
+          <Pagination
+            className="d-inline-flex ml-2 mb-0"
+            page={page}
+            disabledPrev={page === 1}
+            disabledNext={posts.length === 0 || posts.length < 10}
+            prev={useCallback((e) => setPage(page - 1), [page])}
+            next={useCallback((e) => setPage(page + 1), [page])}
+          />
         </div>
       </div>
       <PostsTable {...getTableProps()}>
@@ -376,6 +443,14 @@ export default () => {
                 <small>No posts found.</small>
               </td>
             </tr>
+          )}
+          {isBulkEdit && (
+            <BulkEditPosts
+              rows={selectedFlatRows}
+              columns={visibleColumns.length}
+              onCancel={onCancelBulkEdit}
+              onRemove={onRemoveBulkEdit}
+            />
           )}
           {rows.map((row) => {
             prepareRow(row);

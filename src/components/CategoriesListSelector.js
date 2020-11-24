@@ -1,19 +1,13 @@
-import React, { memo } from "react";
+import { memo } from "react";
 import { useCategories } from "../hooks/categories";
-import styled from "styled-components";
+import ScrollView from "./ScrollView";
 import { Form } from "react-bootstrap";
-
-const ScrollView = styled.div`
-  height: 20vh;
-  overflow-x: hidden;
-  overflow-y: auto;
-`;
 
 export default memo(({ data, onChange, ...other }) => {
   const { categories } = useCategories();
 
   return (
-    <Form.Control as={ScrollView} {...other}>
+    <ScrollView {...other}>
       {data.map((value, index) => (
         <Form.Check
           key={index}
@@ -24,6 +18,6 @@ export default memo(({ data, onChange, ...other }) => {
           label={<small>{categories[index].name}</small>}
         />
       ))}
-    </Form.Control>
+    </ScrollView>
   );
 });
