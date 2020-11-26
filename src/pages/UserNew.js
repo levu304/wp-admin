@@ -1,15 +1,20 @@
-import { Fragment } from "react";
+import { useState } from "react";
 import PageTitle from "../components/PageTitle";
-import { Form, Row, Col, Button, Spinner } from "react-bootstrap";
+import { Form, Row, Col, Button, InputGroup } from "react-bootstrap";
 import { useRoles } from "../hooks/roles";
 import { useUsers } from "../hooks/users";
 import Main from "../components/Main";
 import { useFormik } from "formik";
 import { string, object } from "yup";
+import { generatePassword } from "../common";
+import SubmitButton from "../components/SubmitButton";
 
 export default () => {
   const { roles } = useRoles();
   const { addUser } = useUsers();
+
+  const [visible, setVisible] = useState(false);
+  const [passwordType, setPasswordType] = useState(false);
 
   const submit = (values, { setSubmitting }) =>
     addUser(
@@ -31,11 +36,12 @@ export default () => {
     handleChange,
     handleSubmit,
     isSubmitting,
+    setFieldValue,
   } = useFormik({
     initialValues: {
       username: "",
       email: "",
-      password: "",
+      password: generatePassword(),
       first_name: "",
       last_name: "",
       roles: "subscriber",
@@ -49,6 +55,18 @@ export default () => {
       password: string().required("Please Enter password"),
     }),
   });
+
+  const visiblePassword = (e) => {
+    setFieldValue("password", generatePassword());
+    setVisible(true);
+  };
+
+  const invisiblePassword = (e) => {
+    passwordType && togglePasswordType();
+    setVisible(false);
+  };
+
+  const togglePasswordType = (e) => setPasswordType(!passwordType);
 
   return (
     <Main>
@@ -129,15 +147,38 @@ export default () => {
             <small className="font-weight-bold">Password</small>
           </Form.Label>
           <Col lg="5">
-            <Form.Control
-              type="text"
-              size="sm"
-              name="password"
-              value={values.password}
-              isInvalid={touched.password && errors.password}
-              onChange={handleChange}
-              disabled={isSubmitting}
-            />
+            {visible ? (
+              <InputGroup size="sm">
+                <Form.Control
+                  type={passwordType ? "password" : "text"}
+                  name="password"
+                  value={values.password}
+                  isInvalid={touched.password && errors.password}
+                  onChange={handleChange}
+                  disabled={isSubmitting}
+                />
+                <InputGroup.Append>
+                  <Button
+                    variant="outline-primary"
+                    onClick={togglePasswordType}
+                  >
+                    Hide
+                  </Button>
+                  <Button variant="outline-primary" onClick={invisiblePassword}>
+                    Cancel
+                  </Button>
+                </InputGroup.Append>
+              </InputGroup>
+            ) : (
+              <Button
+                size="sm"
+                variant="outline-primary"
+                disabled={isSubmitting}
+                onClick={visiblePassword}
+              >
+                Show password
+              </Button>
+            )}
           </Col>
         </Form.Group>
         <Form.Group as={Row} className="align-items-center">
@@ -164,28 +205,7 @@ export default () => {
           </Col>
         </Form.Group>
 
-        <Button
-          size="sm"
-          className="mt-3"
-          variant="primary"
-          type="submit"
-          disabled={isSubmitting}
-        >
-          {isSubmitting ? (
-            <Fragment>
-              <Spinner
-                as="span"
-                animation="border"
-                size="sm"
-                role="status"
-                aria-hidden="true"
-              />
-              Add New User
-            </Fragment>
-          ) : (
-            "Add New User"
-          )}
-        </Button>
+        <SubmitButton isSubmitting={isSubmitting} label="Add New User" />
       </Form>
     </Main>
   );

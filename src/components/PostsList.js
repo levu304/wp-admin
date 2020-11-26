@@ -3,7 +3,7 @@ import { usePosts } from "../hooks/posts";
 import { Link, useLocation, useHistory } from "react-router-dom";
 import { paramsToObject, toCapitalize } from "../common";
 import { useTable, useExpanded, useRowSelect } from "react-table";
-import { Button, Form, FormControl } from "react-bootstrap";
+import { Button, Form, FormControl, Spinner } from "react-bootstrap";
 import { FaCommentAlt } from "react-icons/fa";
 import { POSTS, POST_EDIT } from "../routes";
 import { format } from "date-fns";
@@ -48,7 +48,13 @@ export default () => {
         : { ...defaultParams },
     [search]
   );
-  const { posts, getPosts, getAuthors, getPostStatuses } = usePosts();
+  const {
+    posts,
+    isLoading,
+    getPosts,
+    getAuthors,
+    getPostStatuses,
+  } = usePosts();
   const { getCatetories } = useCategories();
 
   useEffect(() => {
@@ -437,7 +443,16 @@ export default () => {
           ))}
         </thead>
         <tbody {...getTableBodyProps()}>
-          {rows.length === 0 && (
+          {isLoading && (
+            <tr>
+              <td colSpan={visibleColumns.length} className="text-center">
+                <Spinner animation="grow" size="sm" className="mx-1" />
+                <Spinner animation="grow" size="sm" className="mx-1" />
+                <Spinner animation="grow" size="sm" className="mx-1" />
+              </td>
+            </tr>
+          )}
+          {!isLoading && rows.length === 0 && (
             <tr>
               <td colSpan={visibleColumns.length} className="text-center">
                 <small>No posts found.</small>
@@ -452,27 +467,29 @@ export default () => {
               onRemove={onRemoveBulkEdit}
             />
           )}
-          {rows.map((row) => {
-            prepareRow(row);
-            const rowProps = row.getRowProps();
-            return (
-              <Fragment key={rowProps.key}>
-                {row.isExpanded ? (
-                  <QuickEditPost
-                    row={row}
-                    rowProps={rowProps}
-                    visibleColumns={visibleColumns}
-                    onCancel={(e) => {
-                      row.toggleRowExpanded();
-                      getPosts(params);
-                    }}
-                  />
-                ) : (
-                  renderRow(row)
-                )}
-              </Fragment>
-            );
-          })}
+          {!isLoading &&
+            rows.length !== 0 &&
+            rows.map((row) => {
+              prepareRow(row);
+              const rowProps = row.getRowProps();
+              return (
+                <Fragment key={rowProps.key}>
+                  {row.isExpanded ? (
+                    <QuickEditPost
+                      row={row}
+                      rowProps={rowProps}
+                      visibleColumns={visibleColumns}
+                      onCancel={(e) => {
+                        row.toggleRowExpanded();
+                        getPosts(params);
+                      }}
+                    />
+                  ) : (
+                    renderRow(row)
+                  )}
+                </Fragment>
+              );
+            })}
         </tbody>
       </PostsTable>
     </Fragment>

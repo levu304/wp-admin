@@ -1,82 +1,115 @@
-import React, { useState, useEffect } from "react";
+import { useEffect, Fragment } from "react";
 import PageTitle from "../components/PageTitle";
-import { Button, Form } from "react-bootstrap";
-import { useLocation } from "react-router-dom";
+import { Form } from "react-bootstrap";
+import { useLocation, useHistory } from "react-router-dom";
 import { useUsers } from "../hooks/users";
 import Main from "../components/Main";
+import { usePosts } from "../hooks/posts";
+import { load } from "react-cookies";
+import { useFormik } from "formik";
+import { USERS } from "../routes";
+import SubmitButton from "../components/SubmitButton";
 
 export default () => {
   const {
-    state: { user },
+    state: { users },
   } = useLocation();
-  const defaultParams = { context: "edit" };
-  const [reassign, setReassign] = useState("");
-  const [value, setValue] = useState("delete");
+  const { replace } = useHistory();
 
-  const { users, deleteUser } = useUsers(defaultParams);
+  const { id } = load("user");
+
+  const { deleteUsers } = useUsers();
+  const { authors, getAuthors } = usePosts();
+
+  const submit = ({ value, reassign }, { setSubmitting }) => {
+    deleteUsers(
+      {
+        id,
+        force: true,
+        users: users.map(({ id }) => id),
+        reassign: value === "delete" ? false : parseInt(reassign),
+      },
+      (result, { data, status }) => {
+        setSubmitting(false);
+        if (result && status === 200) {
+          replace(USERS);
+          return;
+        }
+      }
+    );
+  };
+
+  const { handleChange, handleSubmit, isSubmitting, setFieldValue } = useFormik(
+    {
+      initialValues: {
+        value: "delete",
+        reassign: "",
+      },
+      onSubmit: submit,
+    }
+  );
 
   useEffect(() => {
-    if (users.length !== 0) {
-      setReassign(users[0].id);
+    if (authors.length !== 0) {
+      setFieldValue("resassign", authors[0].id);
+      return;
     }
-  }, [users]);
+    getAuthors();
+  }, [authors]);
 
   return (
     <Main>
       <PageTitle title="Delete Users" />
 
       <p>You have specified this user for deletion:</p>
-      <p>
-        ID #{user.id}: {user.name}
-      </p>
+      {users.map(({ id, name }) => (
+        <p key={id}>
+          ID #{id}: {name}
+        </p>
+      ))}
       <p>What should be done with content owned by this user?</p>
-      <Form>
-        <Form.Check
-          type="radio"
-          value="delete"
-          checked={value === "delete"}
-          onChange={(e) => setValue(e.target.value)}
-          label="Delete all content."
-          className="mb-3 d-flex align-items-center"
-        />
-        <Form.Check className="mb-3 d-flex flex-row align-items-center">
-          <Form.Check.Input
+      <Form onSubmit={handleSubmit}>
+        <Form.Group>
+          <Form.Check
+            type="radio"
+            value="delete"
+            name="value"
+            disabled={isSubmitting}
+            onChange={handleChange}
+            label="Delete all content."
+            className="mb-3 d-flex align-items-center"
+          />
+          <Form.Check
             type="radio"
             value="reassign"
-            checked={value === "reassign"}
-            onChange={(e) => setValue(e.target.value)}
+            name="value"
+            onChange={handleChange}
+            disabled={isSubmitting}
+            className="mb-3 d-flex flex-row align-items-center"
+            label={
+              <Fragment>
+                <Form.Check.Label>Attribute all content to: </Form.Check.Label>
+                <Form.Control
+                  as="select"
+                  size="sm"
+                  custom
+                  name="reassign"
+                  onChange={handleChange}
+                  disabled={isSubmitting}
+                  className="ml-2 col-lg-5"
+                >
+                  {authors.map(({ id, name }) => (
+                    <option key={id} value={id}>
+                      {name}
+                    </option>
+                  ))}
+                </Form.Control>
+              </Fragment>
+            }
           />
-          <Form.Check.Label>Attribute all content to: </Form.Check.Label>
-          <Form.Control
-            as="select"
-            size="sm"
-            custom
-            value={reassign}
-            disabled={value !== "reassign"}
-            onChange={(e) => setReassign(e.target.value)}
-            className="ml-2 col-lg-2"
-          >
-            {users.map(({ id, name }, index) => (
-              <option key={index} value={id}>
-                {name}
-              </option>
-            ))}
-          </Form.Control>
-        </Form.Check>
+        </Form.Group>
 
-        <Button
-          variant="primary"
-          size="sm"
-          className="mt-3"
-          onClick={(e) =>
-            deleteUser({
-              id: user.id,
-              reassign: value === "delete" ? null : parseInt(reassign),
-            })
-          }
-        >
-          Confirm Deletion
-        </Button>
+        <SubmitButton isSubmitting={isSubmitting} label="Confirm Deletion" />
       </Form>
     </Main>
   );

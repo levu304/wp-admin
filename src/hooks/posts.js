@@ -14,8 +14,10 @@ export const usePosts = () => {
   const { statuses } = useSelector((state) => state.post);
   const [posts, setPosts] = useState([]);
   const [updated, setUpdated] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const getPosts = (params) => {
+    setIsLoading(true);
     API.get("/posts", {
       headers: {
         Authorization,
@@ -23,6 +25,7 @@ export const usePosts = () => {
       params,
     })
       .then((response) => {
+        setIsLoading(false);
         const {
           status,
           data: { data },
@@ -32,6 +35,7 @@ export const usePosts = () => {
         }
       })
       .catch((error) => {
+        setIsLoading(false);
         console.log(error.response);
         const { data, status } = error.response;
         switch (status) {
@@ -131,6 +135,7 @@ export const usePosts = () => {
 
   return {
     posts,
+    isLoading,
     authors,
     statuses,
     updated,

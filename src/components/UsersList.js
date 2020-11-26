@@ -1,5 +1,5 @@
 import React, { useMemo, useState, useEffect, Fragment } from "react";
-import { Form, FormControl, Button } from "react-bootstrap";
+import { Form, FormControl, Button, Spinner } from "react-bootstrap";
 import { Link, useLocation, useHistory } from "react-router-dom";
 import { useTable, useRowSelect } from "react-table";
 import { useUsers } from "../hooks/users";
@@ -39,6 +39,7 @@ export default () => {
   );
 
   const {
+    isLoading,
     users,
     updated,
     getUsers,
@@ -91,7 +92,7 @@ export default () => {
                     to={{
                       pathname: USER_DELETE,
                       state: {
-                        user: original,
+                        users: [original],
                       },
                     }}
                     className="text-danger"
@@ -187,21 +188,19 @@ export default () => {
 
   const applyAction = (e) => {
     e.preventDefault();
-
-    switch (action) {
-      case "delete":
-        break;
-
-      default:
-        break;
-    }
+    if (selectedFlatRows.length === 0 || action === "") return;
+    const users = selectedFlatRows.map(({ original }) => original);
+    push({
+      pathname: USER_DELETE,
+      state: {
+        users,
+      },
+    });
   };
 
   const changeRole = (e) => {
     e.preventDefault();
-    if (newRole === "") {
-      return;
-    }
+    if (newRole === "" || selectedFlatRows.length === 0) return;
 
     // updateUser({
     //   id: user.id,
@@ -303,28 +302,39 @@ export default () => {
           ))}
         </thead>
         <tbody {...getTableBodyProps()}>
-          {rows.length === 0 && (
+          {isLoading && (
+            <tr>
+              <td colSpan={visibleColumns.length} className="text-center">
+                <Spinner animation="grow" size="sm" className="mx-1" />
+                <Spinner animation="grow" size="sm" className="mx-1" />
+                <Spinner animation="grow" size="sm" className="mx-1" />
+              </td>
+            </tr>
+          )}
+          {!isLoading && rows.length === 0 && (
             <tr>
               <td colSpan={visibleColumns.length} className="text-center">
                 <small>No users found.</small>
               </td>
             </tr>
           )}
-          {rows.map((row, i) => {
-            prepareRow(row);
-            const rowProps = row.getRowProps();
-            return (
-              <Fragment key={rowProps.key}>
-                <tr {...rowProps}>
-                  {row.cells.map(({ getCellProps, render }) => (
-                    <td {...getCellProps()}>
-                      <TableCell>{render("Cell")}</TableCell>
-                    </td>
-                  ))}
-                </tr>
-              </Fragment>
-            );
-          })}
+          {!isLoading &&
+            rows.length !== 0 &&
+            rows.map((row, i) => {
+              prepareRow(row);
+              const rowProps = row.getRowProps();
+              return (
+                <Fragment key={rowProps.key}>
+                  <tr {...rowProps}>
+                    {row.cells.map(({ getCellProps, render }) => (
+                      <td {...getCellProps()}>
+                        <TableCell>{render("Cell")}</TableCell>
+                      </td>
+                    ))}
+                  </tr>
+                </Fragment>
+              );
+            })}
         </tbody>
       </UsersTable>
     </Fragment>

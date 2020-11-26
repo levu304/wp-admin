@@ -10,8 +10,6 @@ export const useUsers = () => {
   const { push, replace } = useHistory();
   const [users, setUsers] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [hashPassword, setHashPassword] = useState(null);
-  const [updated, setUpdated] = useState(false);
 
   const { logout } = useAuthentication();
 
@@ -75,8 +73,7 @@ export const useUsers = () => {
       });
   };
 
-  const updateUser = (params, newPassword) => {
-    setIsLoading(true);
+  const updateUser = (params, newPassword, callback) => {
     API.post(`/users/${params.id}`, null, {
       headers: {
         Authorization,
@@ -87,32 +84,50 @@ export const useUsers = () => {
           : params,
     })
       .then((response) => {
-        const {
-          status,
-          data: { data },
-        } = response;
-        if (status === 200) {
-          setUpdated(true);
-        }
+        const { data, status } = response;
+        callback(true, { data, status });
       })
       .catch((error) => {
         const { data, status } = error.response;
-        console.log(error.response);
-        switch (status) {
-          case 401:
-            logout();
-            break;
-          default:
-            console.log(data);
-            break;
-        }
+        callback(false, { data, status });
+      });
+  };
+
+  const deleteUsers = (params, callback) => {
+    API.delete(`/users`, {
+      headers: {
+        Authorization,
+      },
+      params,
+    })
+      .then((response) => {
+        const { data, status } = response;
+        callback(true, { data, status });
+        // const {
+        //   status,
+        //   data: { data },
+        // } = response;
+        // if (status === 200) {
+        //   replace(USERS);
+        // }
       })
-      .finally(() => setIsLoading(false));
+      .catch((error) => {
+        const { data, status } = error.response;
+        callback(false, { data, status });
+        // const { data, status } = error.response;
+        // switch (status) {
+        //   case 401:
+        //     logout();
+        //     break;
+        //   default:
+        //     console.log(data);
+        //     break;
+        // }
+      });
   };
 
   const deleteUser = (params) => {
-    setIsLoading(true);
-    API.delete(`/users/${params.id}`, {
+    API.delete(`/users`, {
       headers: {
         Authorization,
       },
@@ -129,7 +144,6 @@ export const useUsers = () => {
         }
       })
       .catch((error) => {
-        setIsLoading(false);
         const { data, status } = error.response;
         switch (status) {
           case 401:
@@ -141,47 +155,14 @@ export const useUsers = () => {
         }
       });
   };
-
-  const generatePassword = () => {
-    API.get(`/generate-password`, {
-      headers: {
-        Authorization,
-      },
-    })
-      .then((response) => {
-        const {
-          status,
-          data: { data },
-        } = response;
-        if (status === 200) {
-          setHashPassword(data);
-        }
-      })
-      .catch((error) => {
-        const { data, status } = error.response;
-        switch (status) {
-          case 401:
-            logout();
-            break;
-          default:
-            console.log(data);
-            break;
-        }
-      });
-  };
-
-  const toggleUpdateAlert = () => setUpdated(!updated);
 
   return {
     users,
-    hashPassword,
     isLoading,
-    updated,
     getUsers,
     addUser,
     deleteUser,
+    deleteUsers,
     updateUser,
-    generatePassword,
-    toggleUpdateAlert,
   };
 };

@@ -1,6 +1,14 @@
-import React, { useState, useEffect, useRef, Fragment } from "react";
+import { useState, useMemo, useRef, Fragment } from "react";
 import { useLocation, Link } from "react-router-dom";
-import { Button, Form, Row, Col, Image, Alert } from "react-bootstrap";
+import {
+  Button,
+  Form,
+  Row,
+  Col,
+  Image,
+  Alert,
+  InputGroup,
+} from "react-bootstrap";
 import PageTitle from "../components/PageTitle";
 import { USER_NEW, USERS } from "../routes";
 import { useRoles } from "../hooks/roles";
@@ -9,43 +17,110 @@ import Section from "../components/Section";
 import Main from "../components/Main";
 import { FaLongArrowAltLeft } from "react-icons/fa";
 import { useSettings } from "../hooks/settings";
+import { generatePassword } from "../common";
+import { useFormik } from "formik";
+import { string, object } from "yup";
+import { useAuthentication } from "../hooks/auth";
+import SubmitButton from "../components/SubmitButton";
 
 export default () => {
   const {
     state: { user },
+    pathname,
   } = useLocation();
+
+  const path = useMemo(() => pathname.replace("/", ""), [pathname]);
+
   const { roles } = useRoles();
-  const {
-    hashPassword,
-    updated,
-    toggleUpdateAlert,
-    generatePassword,
-    updateUser,
-  } = useUsers();
+  const { updateUser } = useUsers();
   const ref = useRef();
   const { languages } = useSettings();
+  const { logout } = useAuthentication();
 
-  const [role, setRole] = useState(user.roles[0]);
-  const [first_name, setFirstName] = useState(user.first_name);
-  const [last_name, setLastName] = useState(user.last_name);
-  const [nickname, setNickname] = useState(user.nickname);
-  const [display_name, setDisplayName] = useState(user.name);
-  const [email, setEmail] = useState(user.email);
-  const [url, setURL] = useState(user.url);
-  const [description, setDescription] = useState(user.description);
-  const [password, setPassword] = useState(hashPassword);
-  const [locale, setLocale] = useState(user.locale);
+  const [updated, setUpdated] = useState(false);
+  const [passwordType, setPasswordType] = useState(false);
 
-  useEffect(() => {
-    if (hashPassword) {
-      setPassword(hashPassword);
-    }
-  }, [hashPassword]);
+  const submit = (
+    {
+      first_name,
+      last_name,
+      nickname,
+      display_name,
+      email,
+      url,
+      description,
+      locale,
+      password,
+      role,
+    },
+    { setSubmitting }
+  ) =>
+    updateUser(
+      {
+        id: user.id,
+        first_name,
+        last_name,
+        nickname,
+        name: display_name,
+        email,
+        url,
+        description,
+        roles: [role],
+        locale,
+      },
+      password,
+      (success, { data, status }) => {
+        setSubmitting(false);
+        if (success) {
+          setUpdated(true);
+          ref.current.scrollTo({ top: 0, behavior: "smooth" });
+          return;
+        }
+        switch (status) {
+          case 401:
+            logout();
+            break;
+          default:
+            console.log(data);
+            break;
+        }
+      }
+    );
+
+  const {
+    values,
+    errors,
+    touched,
+    handleChange,
+    handleSubmit,
+    isSubmitting,
+    setFieldValue,
+  } = useFormik({
+    initialValues: {
+      role: user.roles[0],
+      email: user.email,
+      password: null,
+      first_name: user.first_name,
+      last_name: user.last_name,
+      description: user.description,
+      locale: user.locale,
+      url: user.url,
+      nickname: user.nickname,
+      display_name: user.name,
+    },
+    onSubmit: submit,
+    validationSchema: object().shape({
+      nickname: string().required("Please Enter nickname"),
+      email: string().email().required("Please Enter password"),
+    }),
+  });
 
   return (
     <Main className="pt-4 pb-5" ref={ref}>
       <div className="d-flex flex-row align-items-center mb-3">
-        <PageTitle title={`Edit User ${user.name}`} />
+        <PageTitle
+          title={path !== "profile" ? `Edit User ${user.name}` : "Profile"}
+        />
         <Button
           as={Link}
           to={USER_NEW}
@@ -57,17 +132,19 @@ export default () => {
         </Button>
       </div>
       {updated && (
-        <Alert variant="success" onClose={toggleUpdateAlert} dismissible>
+        <Alert variant="success" onClose={() => setUpdated(false)} dismissible>
           <p className="font-weight-bold mb-0">
-            <small>User updated.</small>
+            <small>{path === "profile" ? "Profile" : "User"} updated.</small>
           </p>
-          <Link to={USERS}>
-            <FaLongArrowAltLeft size="0.8em" className="mr-1" />
-            <small>Back To Users</small>
-          </Link>
+          {path !== "profile" && (
+            <Link to={USERS}>
+              <FaLongArrowAltLeft size="0.8em" className="mr-1" />
+              <small>Back To Users</small>
+            </Link>
+          )}
         </Alert>
       )}
-      <Form>
+      <Form onSubmit={handleSubmit}>
         <Section className="Personal Options">
           <Form.Group as={Row} className="align-items-center">
             <Form.Label column lg="3">
@@ -78,8 +155,10 @@ export default () => {
                 as="select"
                 size="sm"
                 custom
-                value={locale}
-                onChange={(e) => setLocale(e.target.value)}
+                name="locale"
+                value={values.locale}
+                onChange={handleChange}
+                disabled={isSubmitting}
               >
                 {languages.map(({ native_name, language }, index) => (
                   <option key={index} value={language}>
@@ -106,7 +185,7 @@ export default () => {
             </Col>
           </Form.Group>
 
-          {role === "administrator" && (
+          {values.role === "administrator" && (
             <Form.Group as={Row} className="align-items-center">
               <Form.Label column lg="3">
                 <small className="font-weight-bold">Role</small>
@@ -116,8 +195,10 @@ export default () => {
                   as="select"
                   size="sm"
                   custom
-                  value={role}
-                  onChange={(e) => setRole(e.target.value)}
+                  name="role"
+                  value={values.role}
+                  onChange={handleChange}
+                  disabled={isSubmitting}
                   className="text-capitalize"
                 >
                   {roles.map(({ name }, index) => (
@@ -142,8 +223,10 @@ export default () => {
               <Form.Control
                 type="text"
                 size="sm"
-                value={first_name}
-                onChange={(e) => setFirstName(e.target.value)}
+                name="first_name"
+                value={values.first_name}
+                onChange={handleChange}
+                disabled={isSubmitting}
               />
             </Col>
           </Form.Group>
@@ -155,8 +238,10 @@ export default () => {
               <Form.Control
                 type="text"
                 size="sm"
-                value={last_name}
-                onChange={(e) => setLastName(e.target.value)}
+                name="last_name"
+                value={values.last_name}
+                onChange={handleChange}
+                disabled={isSubmitting}
               />
             </Col>
           </Form.Group>
@@ -171,8 +256,10 @@ export default () => {
               <Form.Control
                 type="text"
                 size="sm"
-                value={nickname}
-                onChange={(e) => setNickname(e.target.value)}
+                name="nickname"
+                value={values.nickname}
+                onChange={handleChange}
+                disabled={isSubmitting}
               />
             </Col>
           </Form.Group>
@@ -188,8 +275,10 @@ export default () => {
                 as="select"
                 size="sm"
                 custom
-                value={display_name}
-                onChange={(e) => setDisplayName(e.target.value)}
+                name="display_name"
+                value={values.display_name}
+                onChange={handleChange}
+                disabled={isSubmitting}
               >
                 {user.username === user.name ? (
                   <option value={user.name}>{user.name}</option>
@@ -213,10 +302,12 @@ export default () => {
             </Form.Label>
             <Col lg="5">
               <Form.Control
-                type="text"
+                type="email"
                 size="sm"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                name="email"
+                value={values.email}
+                onChange={handleChange}
+                disabled={isSubmitting}
               />
             </Col>
           </Form.Group>
@@ -228,14 +319,18 @@ export default () => {
               <Form.Control
                 type="text"
                 size="sm"
-                value={url}
-                onChange={(e) => setURL(e.target.value)}
+                name="url"
+                value={values.url}
+                onChange={handleChange}
+                disabled={isSubmitting}
               />
             </Col>
           </Form.Group>
         </Section>
 
-        <Section title="About the user">
+        <Section
+          title={`About ${path === "profile" ? "Yourself" : "the user"}`}
+        >
           <Form.Group as={Row}>
             <Form.Label column lg="3">
               <small className="font-weight-bold">Biographical Info</small>
@@ -244,8 +339,10 @@ export default () => {
               <Form.Control
                 as="textarea"
                 rows={3}
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
+                name="description"
+                value={values.description}
+                onChange={handleChange}
+                disabled={isSubmitting}
               />
               <p className="font-italic">
                 <small>
@@ -277,54 +374,46 @@ export default () => {
               <small className="font-weight-bold">Password</small>
             </Form.Label>
             <Col lg="6">
-              {!password ? (
+              {!values.password ? (
                 <Button
                   size="sm"
                   variant="outline-primary"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    generatePassword();
-                  }}
+                  onClick={(e) => setFieldValue("password", generatePassword())}
                 >
                   Generate Password
                 </Button>
               ) : (
-                <Form.Control
-                  type="text"
-                  size="sm"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                />
+                <InputGroup size="sm">
+                  <Form.Control
+                    type={passwordType ? "password" : "text"}
+                    name="password"
+                    value={values.password}
+                    onChange={handleChange}
+                    disabled={isSubmitting}
+                  />
+                  <InputGroup.Append>
+                    <Button
+                      variant="outline-primary"
+                      onClick={(e) => setPasswordType(!passwordType)}
+                    >
+                      Hide
+                    </Button>
+                    <Button
+                      variant="outline-primary"
+                      onClick={(e) => setFieldValue("password", null)}
+                    >
+                      Cancel
+                    </Button>
+                  </InputGroup.Append>
+                </InputGroup>
               )}
             </Col>
           </Form.Group>
 
-          <Button
-            size="sm"
-            className="mt-3"
-            variant="primary"
-            onClick={(e) => {
-              e.preventDefault();
-              updateUser(
-                {
-                  id: user.id,
-                  first_name,
-                  last_name,
-                  nickname,
-                  name: display_name,
-                  email,
-                  url,
-                  description,
-                  roles: [role],
-                  locale,
-                },
-                password
-              );
-              ref.current.scrollTo({ top: 0, behavior: "smooth" });
-            }}
-          >
-            Update User
-          </Button>
+          <SubmitButton
+            isSubmitting={isSubmitting}
+            label={`Update ${path === "profile" ? "Profile" : "User"}`}
+          />
         </Section>
       </Form>
     </Main>

@@ -1,14 +1,5 @@
-import { Fragment, useState } from "react";
-import {
-  Card,
-  Container,
-  Row,
-  Col,
-  Form,
-  Button,
-  Alert,
-  Spinner,
-} from "react-bootstrap";
+import { useState } from "react";
+import { Card, Container, Row, Col, Form, Alert } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import { PASSWORD_FORGET } from "../routes";
 import { useAuthentication } from "../hooks/auth";
@@ -17,6 +8,7 @@ import { string, object } from "yup";
 import { LANDING } from "../routes";
 import { useHistory } from "react-router-dom";
 import { save } from "react-cookies";
+import SubmitButton from "../components/SubmitButton";
 
 export default () => {
   const { login } = useAuthentication();
@@ -107,26 +99,7 @@ export default () => {
                     />
                   </Col>
                   <Col className="text-right">
-                    <Button
-                      variant="primary"
-                      type="submit"
-                      disabled={isSubmitting}
-                    >
-                      {isSubmitting ? (
-                        <Fragment>
-                          <Spinner
-                            as="span"
-                            animation="border"
-                            size="sm"
-                            role="status"
-                            aria-hidden="true"
-                          />
-                          Login
-                        </Fragment>
-                      ) : (
-                        "Login"
-                      )}
-                    </Button>
+                    <SubmitButton isSubmitting={isSubmitting} label="Login" />
                   </Col>
                 </Row>
               </Form>

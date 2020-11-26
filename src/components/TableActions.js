@@ -1,8 +1,11 @@
-import React, { memo } from "react";
+import { memo } from "react";
 import { Table } from "react-bootstrap";
 import styled from "styled-components";
 
 const TableActions = styled(Table)`
+  & {
+    background-color: white;
+  }
   & tbody tr .row-actions {
     display: none;
   }
