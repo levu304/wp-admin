@@ -21,9 +21,6 @@ import BulkEditPosts from "./BulkEditPosts";
 import TableCell from "./TableCell";
 
 const PostsTable = styled(TableActions)`
-  & td:nth-child(1) {
-    width: 2%;
-  }
   & td:nth-child(3) {
     width: 8%;
   }

@@ -10,6 +10,17 @@ import FormActions from "./FormActions";
 import Pagination from "./Pagination";
 import { paramsToObject } from "../common";
 import TableCell from "./TableCell";
+import styled from "styled-components";
+
+const CategoriesTable = styled(TableActions)`
+  & td:nth-child(2),
+  & td:nth-child(4) {
+    width: 25%;
+  }
+  & td:nth-child(5) {
+    width: 5%;
+  }
+`;
 
 export default () => {
   const { search } = useLocation();
@@ -187,7 +198,7 @@ export default () => {
           />
         </div>
       </div>
-      <TableActions {...getTableProps()}>
+      <CategoriesTable {...getTableProps()}>
         <thead>
           {headerGroups.map((headerGroup) => (
             <tr {...headerGroup.getHeaderGroupProps()}>
@@ -221,7 +232,7 @@ export default () => {
             );
           })}
         </tbody>
-      </TableActions>
+      </CategoriesTable>
     </Fragment>
   );
 };

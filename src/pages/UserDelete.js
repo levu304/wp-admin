@@ -5,7 +5,6 @@ import { useLocation, useHistory } from "react-router-dom";
 import { useUsers } from "../hooks/users";
 import Main from "../components/Main";
 import { usePosts } from "../hooks/posts";
-import { load } from "react-cookies";
 import { useFormik } from "formik";
 import { USERS } from "../routes";
 import SubmitButton from "../components/SubmitButton";
@@ -16,15 +15,12 @@ export default () => {
   } = useLocation();
   const { replace } = useHistory();
 
-  const { id } = load("user");
-
   const { deleteUsers } = useUsers();
   const { authors, getAuthors } = usePosts();
 
   const submit = ({ value, reassign }, { setSubmitting }) => {
     deleteUsers(
       {
-        id,
         force: true,
         users: users.map(({ id }) => id),
         reassign: value === "delete" ? false : parseInt(reassign),

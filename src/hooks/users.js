@@ -93,6 +93,23 @@ export const useUsers = () => {
       });
   };
 
+  const updateUsersRole = (params, callback) => {
+    API.put(`/users/role`, null, {
+      headers: {
+        Authorization,
+      },
+      params,
+    })
+      .then((response) => {
+        const { data, status } = response;
+        callback(true, { data, status });
+      })
+      .catch((error) => {
+        const { data, status } = error.response;
+        callback(false, { data, status });
+      });
+  };
+
   const deleteUsers = (params, callback) => {
     API.delete(`/users`, {
       headers: {
@@ -103,26 +120,10 @@ export const useUsers = () => {
       .then((response) => {
         const { data, status } = response;
         callback(true, { data, status });
-        // const {
-        //   status,
-        //   data: { data },
-        // } = response;
-        // if (status === 200) {
-        //   replace(USERS);
-        // }
       })
       .catch((error) => {
         const { data, status } = error.response;
         callback(false, { data, status });
-        // const { data, status } = error.response;
-        // switch (status) {
-        //   case 401:
-        //     logout();
-        //     break;
-        //   default:
-        //     console.log(data);
-        //     break;
-        // }
       });
   };
 
@@ -162,6 +163,7 @@ export const useUsers = () => {
     getUsers,
     addUser,
     deleteUser,
+    updateUsersRole,
     deleteUsers,
     updateUser,
   };

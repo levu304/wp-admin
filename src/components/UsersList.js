@@ -14,9 +14,6 @@ import TableCell from "./TableCell";
 import styled from "styled-components";
 
 const UsersTable = styled(TableActions)`
-  & td:nth-child(1) {
-    width: 2%;
-  }
   & td:nth-child(3),
   & td:nth-child(2),
   & td:nth-child(4),
@@ -28,7 +25,7 @@ const UsersTable = styled(TableActions)`
 export default () => {
   const currentUser = cookie.load("user");
   const { search } = useLocation();
-  const { push } = useHistory();
+  const { push, replace } = useHistory();
   const defaultParams = { context: "edit" };
   const params = useMemo(
     () =>
@@ -43,7 +40,7 @@ export default () => {
     users,
     updated,
     getUsers,
-    updateUser,
+    updateUsersRole,
     toggleUpdateAlert,
   } = useUsers();
   const { roles } = useRoles();
@@ -201,19 +198,22 @@ export default () => {
   const changeRole = (e) => {
     e.preventDefault();
     if (newRole === "" || selectedFlatRows.length === 0) return;
-
-    // updateUser({
-    //   id: user.id,
-    //   first_name: user.first_name,
-    //   last_name: user.last_name,
-    //   nickname: user.nickname,
-    //   name: user.display_name,
-    //   email: user.email,
-    //   url: user.url,
-    //   description: user.description,
-    //   roles: [newRole],
-    //   locale: [user.locale],
-    // });
+    const users = selectedFlatRows.map(({ original: { id } }) => id);
+    updateUsersRole(
+      {
+        users,
+        roles: [newRole],
+      },
+      (result, { status }) => {
+        if (result && status === 200) {
+          push("/empty");
+          replace({
+            pathname: USERS,
+            search,
+          });
+        }
+      }
+    );
   };
 
   return (

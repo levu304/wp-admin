@@ -11,6 +11,18 @@ import Pagination from "./Pagination";
 import { paramsToObject } from "../common";
 import TableCell from "./TableCell";
 
+import styled from "styled-components";
+
+const TagsTable = styled(TableActions)`
+  & td:nth-child(2),
+  & td:nth-child(4) {
+    width: 25%;
+  }
+  & td:nth-child(5) {
+    width: 5%;
+  }
+`;
+
 export default () => {
   const { search } = useLocation();
   const defaultParams = { context: "edit", taxonomy: "post_tag", per_page: 10 };
@@ -187,7 +199,7 @@ export default () => {
           />
         </div>
       </div>
-      <TableActions {...getTableProps()}>
+      <TagsTable {...getTableProps()}>
         <thead>
           {headerGroups.map((headerGroup) => (
             <tr {...headerGroup.getHeaderGroupProps()}>
@@ -221,7 +233,7 @@ export default () => {
             );
           })}
         </tbody>
-      </TableActions>
+      </TagsTable>
     </Fragment>
   );
 };

@@ -12,6 +12,9 @@ const TableActions = styled(Table)`
   & tbody tr:hover .row-actions {
     display: flex;
   }
+  & td:nth-child(1) {
+    width: 2%;
+  }
 `;
 
 export default memo(({ children, ...other }) => (
